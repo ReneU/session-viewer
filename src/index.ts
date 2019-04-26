@@ -20,5 +20,6 @@ export const app = new App({
     "spatialReference":{
       "wkid":102100
     }
-  })
+  }),
+  appIds: ["beispielnutzerstudiecrowngrundstuecke", "beispielnutzerstudiedefaultgrundstuecke"]
 });
