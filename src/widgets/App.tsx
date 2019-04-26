@@ -8,16 +8,19 @@ import {
 import { tsx } from "esri/widgets/support/widget";
 import {watch, whenTrue} from "esri/core/watchUtils";
 import EsriMap from "esri/Map";
+import FeatureLayer from "esri/layers/FeatureLayer";
 import MapView from "esri/views/MapView";
 import Widget from "esri/widgets/Widget";
 import Extent from "esri/geometry/Extent";
 
 import { Header } from "./Header";
+import DataProvider from '../data/DataProvider';
 
 export interface AppParams {
   appName: string;
   basemap: string;
   initialExtent: Extent;
+  appIds: string[];
 }
 
 interface AppViewParams extends AppParams, esri.WidgetProperties {}
@@ -32,15 +35,32 @@ const CSS = {
 @subclass("app.widgets.App")
 export default class App extends declared(Widget) {
   @property() appName: string;
-  @property() basemap: string;
   @property() initialExtent: Extent;
   @property() mapLeft: EsriMap;
   @property() mapRight: EsriMap;
   @property() viewLeft: MapView;
   @property() viewRight: MapView;
 
-  constructor(params: Partial<AppViewParams>) {
+  constructor(params: AppViewParams) {
     super(params);
+    this.mapLeft = new EsriMap({basemap: params.basemap});
+    this.mapRight = new EsriMap({basemap: params.basemap});
+    const viewLeft = this.viewLeft = new MapView({
+      extent: params.initialExtent,
+      map: this.mapLeft
+    });
+    const viewRight = this.viewRight = new MapView({
+      extent: params.initialExtent,
+      map: this.mapRight
+    });
+    const dataProvider = new DataProvider();
+    dataProvider.getFeatureLayers(params.appIds[0], viewLeft).then((layer: FeatureLayer) => {
+      this.mapLeft.add(layer);
+    });
+    dataProvider.getFeatureLayers(params.appIds[1], viewRight).then((layer: FeatureLayer) => {
+      this.mapRight.add(layer);
+    });
+    this.synchronizeViews();
   }
 
   render() {
@@ -56,29 +76,11 @@ export default class App extends declared(Widget) {
   }
 
   private onLeftReady(element: HTMLDivElement) {
-    const map = new EsriMap({
-      basemap: this.basemap
-    });
-    this.mapLeft = map;
-    this.viewLeft = new MapView({
-      map: this.mapLeft,
-      extent: this.initialExtent,
-      container: element
-    });
-    this.synchronizeViews();
+    this.viewLeft.container = element;
   }
 
   private onRightReady(element: HTMLDivElement) {
-    const map = new EsriMap({
-      basemap: this.basemap
-    });
-    this.mapRight = map;
-    this.viewRight = new MapView({
-      map: this.mapRight,
-      extent: this.initialExtent,
-      container: element
-    });
-    this.synchronizeViews();
+    this.viewRight.container = element;
   }
 
   private synchronizeViews () {
