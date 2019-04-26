@@ -51,8 +51,7 @@ header.top-nav {
 }
 
 /* map view */
-.main,
-.webmap {
+.main{
   padding: 0;
   margin: 0;
   width: 100%;
@@ -60,6 +59,28 @@ header.top-nav {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.webmap-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+
+.webmap-left {
+  padding: 0;
+  margin: 0;
+  width: 50%;
+  height: 100%;
+  float: left;
+}
+
+.webmap-right {
+  padding: 0;
+  margin: 0;
+  width: 50%;
+  height: 100%;
+  float: right;
 }
 
 .main {

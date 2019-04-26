@@ -20,7 +20,9 @@ interface AppViewParams extends AppParams, esri.WidgetProperties {}
 
 const CSS = {
   base: "main",
-  webmap: "webmap"
+  container: "webmap-container",
+  webmapLeft: "webmap-left",
+  webmapRight: "webmap-right"
 };
 
 @subclass("app.widgets.App")
@@ -41,7 +43,10 @@ export default class App extends declared(Widget) {
     return (
       <div class={CSS.base}>
         {Header({ appName: this.appName })}
-        <div class={CSS.webmap} bind={this} afterCreate={this.onAfterCreate} />
+        <div class={CSS.container}>
+          <div class={CSS.webmapLeft} bind={this} afterCreate={this.onAfterCreate} />
+          <div class={CSS.webmapRight} bind={this} afterCreate={this.onAfterCreate} />
+        </div>
       </div>
     );
   }
