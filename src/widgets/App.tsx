@@ -10,12 +10,14 @@ import {watch, whenTrue} from "esri/core/watchUtils";
 import EsriMap from "esri/Map";
 import MapView from "esri/views/MapView";
 import Widget from "esri/widgets/Widget";
+import Extent from "esri/geometry/Extent";
 
 import { Header } from "./Header";
 
 export interface AppParams {
   appName: string;
   basemap: string;
+  initialExtent: Extent;
 }
 
 interface AppViewParams extends AppParams, esri.WidgetProperties {}
@@ -31,6 +33,7 @@ const CSS = {
 export default class App extends declared(Widget) {
   @property() appName: string;
   @property() basemap: string;
+  @property() initialExtent: Extent;
   @property() mapLeft: EsriMap;
   @property() mapRight: EsriMap;
   @property() viewLeft: MapView;
@@ -59,6 +62,7 @@ export default class App extends declared(Widget) {
     this.mapLeft = map;
     this.viewLeft = new MapView({
       map: this.mapLeft,
+      extent: this.initialExtent,
       container: element
     });
     this.synchronizeViews();
@@ -71,6 +75,7 @@ export default class App extends declared(Widget) {
     this.mapRight = map;
     this.viewRight = new MapView({
       map: this.mapRight,
+      extent: this.initialExtent,
       container: element
     });
     this.synchronizeViews();
