@@ -9,5 +9,6 @@ import App from "./widgets/App";
  */
 export const app = new App({
   appName: "Session Viewer",
+  basemap: "topo",
   container: document.getElementById("app") as HTMLElement
 });
