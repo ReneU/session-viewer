@@ -1,20 +1,20 @@
 import esri = __esri;
 
 import {
-  aliasOf,
   declared,
   property,
   subclass
 } from "esri/core/accessorSupport/decorators";
 import { tsx } from "esri/widgets/support/widget";
-
 import EsriMap from "esri/Map";
 import MapView from "esri/views/MapView";
 import Widget from "esri/widgets/Widget";
 
-import AppViewModel, { AppParams } from "./App/AppViewModel";
-
 import { Header } from "./Header";
+
+export interface AppParams {
+  appName: string;
+}
 
 interface AppViewParams extends AppParams, esri.WidgetProperties {}
 
@@ -27,13 +27,11 @@ const CSS = {
 
 @subclass("app.widgets.App")
 export default class App extends declared(Widget) {
-  @property() viewModel = new AppViewModel();
-
-  @aliasOf("viewModel.appName") appName: string;
-
-  @aliasOf("viewModel.map") map: EsriMap;
-
-  @aliasOf("viewModel.view") view: MapView;
+  @property() appName: string;
+  @property() mapLeft = new EsriMap();
+  @property() mapRight = new EsriMap();
+  @property() viewLeft: MapView;
+  @property() viewRight: MapView;
 
   constructor(params: Partial<AppViewParams>) {
     super(params);
@@ -44,20 +42,31 @@ export default class App extends declared(Widget) {
       <div class={CSS.base}>
         {Header({ appName: this.appName })}
         <div class={CSS.container}>
-          <div class={CSS.webmapLeft} bind={this} afterCreate={this.onAfterCreate} />
-          <div class={CSS.webmapRight} bind={this} afterCreate={this.onAfterCreate} />
+          <div class={CSS.webmapLeft} bind={this} afterCreate={this.onLeftReady} />
+          <div class={CSS.webmapRight} bind={this} afterCreate={this.onRightReady} />
         </div>
       </div>
     );
   }
 
-  private onAfterCreate(element: HTMLDivElement) {
+  private onLeftReady(element: HTMLDivElement) {
     const map = new EsriMap({
       basemap: "topo"
     });
-    this.map = map;
-    this.view = new MapView({
-      map: this.map,
+    this.mapLeft = map;
+    this.viewLeft = new MapView({
+      map: this.mapLeft,
+      container: element
+    });
+  }
+
+  private onRightReady(element: HTMLDivElement) {
+    const map = new EsriMap({
+      basemap: "topo"
+    });
+    this.mapRight = map;
+    this.viewRight = new MapView({
+      map: this.mapRight,
       container: element
     });
   }
