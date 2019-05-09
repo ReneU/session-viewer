@@ -10,7 +10,7 @@ import Extent from "esri/geometry/Extent";
  */
 export const app = new App({
   appName: "Session Viewer",
-  basemap: "topo",
+  basemap: "dark-gray",
   container: document.getElementById("app") as HTMLElement,
   initialExtent:  new Extent({
     "xmin":836278.4172107871,

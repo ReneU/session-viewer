@@ -47,12 +47,20 @@ export default class App extends declared(Widget) {
     this.mapRight = new EsriMap({basemap: params.basemap});
     const viewLeft = this.viewLeft = new MapView({
       extent: params.initialExtent,
-      map: this.mapLeft
+      map: this.mapLeft,
+      constraints: {
+        rotationEnabled: false
+      }
     });
+    viewLeft.ui.components = [];
     const viewRight = this.viewRight = new MapView({
       extent: params.initialExtent,
-      map: this.mapRight
+      map: this.mapRight,
+      constraints: {
+        rotationEnabled: false
+      }
     });
+    viewRight.ui.components = [];
     const dataProvider = new DataProvider();
     dataProvider.getFeatureLayers(params.appIds[0], viewLeft).then((layer: FeatureLayer) => {
       this.mapLeft.add(layer);
