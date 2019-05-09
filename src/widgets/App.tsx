@@ -79,7 +79,11 @@ export default class App extends declared(Widget) {
       });
     this.synchronizeViews();
     this.viewLeft.when((view: MapView) => {
-      this.histogramSlider = new HistogramSlider({layer: this.layerLeft, field: "zoom", view: view});
+      this.histogramSlider = new HistogramSlider({layer: this.layerLeft, field: "scale", view: view});
+      this.histogramSlider.onRendererChange = renderer => {
+        this.layerLeft.renderer = renderer;
+        this.layerRight.renderer = renderer;
+      }
     })
   }
 

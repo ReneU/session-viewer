@@ -7,6 +7,7 @@ import MapView from "esri/views/MapView";
 import {createContinuousRenderer} from "esri/renderers/smartMapping/creators/color";
 import histogram from "esri/renderers/smartMapping/statistics/histogram";
 import ColorSlider from "esri/widgets/ColorSlider";
+import { Renderer } from 'esri/renderers';
 
 @subclass("app.widgets.HistogramSlider")
 export default class HistogramSlider extends declared(Accessor) {
@@ -14,6 +15,7 @@ export default class HistogramSlider extends declared(Accessor) {
   @property() layer: FeatureLayer;
   @property() field: string;
   @property() view: MapView;
+  @property() onRendererChange: (renderer: Renderer) => void;
 
   constructor(params: HistogramSliderParams){
     super();
@@ -30,7 +32,9 @@ export default class HistogramSlider extends declared(Accessor) {
       field: this.field,
       basemap: "dark-gray",
       //normalizationField: "TOTPOP_CY",
-      theme: "high-to-low"
+      maxValue: 50000,
+      minValue: 30000,
+      theme: "extremes"
     };
 
     let sliderParams: ColorSlider = {
@@ -41,7 +45,7 @@ export default class HistogramSlider extends declared(Accessor) {
     this.layer
       .when(() => createContinuousRenderer(colorParams))
       .then(response => {
-        this.layer.renderer = response.renderer;
+        this.onRendererChange(response.renderer);
         sliderParams.statistics = response.statistics;
         sliderParams.visualVariable = response.visualVariable;
 
@@ -57,9 +61,10 @@ export default class HistogramSlider extends declared(Accessor) {
         this.view.ui.add("slider", "bottom-left");
 
         colorSlider.on("data-change", () => {
+          const visualVariable = clone(colorSlider.visualVariable)
           var renderer = this.layer.renderer.clone();
-          renderer.visualVariables = [clone(colorSlider.visualVariable)];
-          this.layer.renderer = renderer;
+          renderer.visualVariables = [visualVariable];
+          this.onRendererChange(renderer);
         });
       })
       .catch(function(error) {
