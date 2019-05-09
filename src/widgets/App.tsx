@@ -5,7 +5,7 @@ import {
   property,
   subclass
 } from "esri/core/accessorSupport/decorators";
-import { tsx } from "esri/widgets/support/widget";
+import { renderable, tsx } from "esri/widgets/support/widget";
 import {watch, whenTrue} from "esri/core/watchUtils";
 import EsriMap from "esri/Map";
 import FeatureLayer from "esri/layers/FeatureLayer";
@@ -14,6 +14,7 @@ import Widget from "esri/widgets/Widget";
 import Extent from "esri/geometry/Extent";
 
 import { Header } from "./Header";
+import HistogramSlider from "./HistogramSlider";
 import DataProvider from '../data/DataProvider';
 
 export interface AppParams {
@@ -40,6 +41,10 @@ export default class App extends declared(Widget) {
   @property() mapRight: EsriMap;
   @property() viewLeft: MapView;
   @property() viewRight: MapView;
+  @property() layerLeft: FeatureLayer;
+  @property() layerRight: FeatureLayer;
+  @renderable()
+  @property() histogramSlider: HistogramSlider;
 
   constructor(params: AppViewParams) {
     super(params);
@@ -62,13 +67,20 @@ export default class App extends declared(Widget) {
     });
     viewRight.ui.components = [];
     const dataProvider = new DataProvider();
-    dataProvider.getFeatureLayers(params.appIds[0], viewLeft).then((layer: FeatureLayer) => {
-      this.mapLeft.add(layer);
-    });
-    dataProvider.getFeatureLayers(params.appIds[1], viewRight).then((layer: FeatureLayer) => {
-      this.mapRight.add(layer);
-    });
+    dataProvider.getFeatureLayers(params.appIds[0], viewLeft)
+      .then((layer: FeatureLayer) => {
+        this.mapLeft.add(layer);
+        this.layerLeft = layer;
+      });
+    dataProvider.getFeatureLayers(params.appIds[1], viewRight)
+      .then((layer: FeatureLayer) => {
+        this.mapRight.add(layer);
+        this.layerRight = layer;
+      });
     this.synchronizeViews();
+    this.viewLeft.when((view: MapView) => {
+      this.histogramSlider = new HistogramSlider({layer: this.layerLeft, field: "zoom", view: view});
+    })
   }
 
   render() {
