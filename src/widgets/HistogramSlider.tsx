@@ -30,7 +30,7 @@ export default class HistogramSlider extends declared(Accessor) {
       field: this.field,
       basemap: "dark-gray",
       //normalizationField: "TOTPOP_CY",
-      theme: "above-and-below"
+      theme: "high-to-low"
     };
 
     let sliderParams: ColorSlider = {

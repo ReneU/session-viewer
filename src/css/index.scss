@@ -1,6 +1,8 @@
 $blue: #0079c1;
 $gray: #efefef;
 $white: #fff;
+$black:#242424;
+$orange:#ff642e;
 
 html,
 body,
@@ -20,7 +22,8 @@ body,
 /* header */
 header.top-nav {
   z-index: 1;
-  background-color: $blue;
+  border-color: $orange;
+  background-color: $black;
   width: 100%;
   position: relative;
   font-weight: 400;
@@ -45,7 +48,7 @@ header.top-nav {
 
 .top-nav-title,
 .top-nav-link {
-  color: $white;
+  color: $orange;
   letter-spacing: 2px;
   text-transform: uppercase;
 }
