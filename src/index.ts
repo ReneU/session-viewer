@@ -21,5 +21,5 @@ export const app = new App({
       "wkid":102100
     }
   }),
-  appIds: ["beispielnutzerstudiecrowngrundstuecke", "beispielnutzerstudiedefaultgrundstuecke"]
+  appIds: ["beispielnutzerstudiecrownhotels", "beispielnutzerstudiedefaulthotels"]
 });

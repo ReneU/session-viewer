@@ -33,7 +33,6 @@ export default class HistogramSlider extends declared(Accessor) {
       basemap: "dark-gray",
       //normalizationField: "TOTPOP_CY",
       maxValue: 50000,
-      minValue: 30000,
       theme: "extremes"
     };
 
