@@ -17,12 +17,13 @@ export default class DataProvider{
     toGraphics(data: any){
         return data.sessions.buckets.reduce((graphics: Graphic[], session: Session) => {
             const sessionId = session.key;
-            session.events.hits.hits.forEach((event: Event) => {
+            session.events.hits.hits.forEach((event: Event, i: number) => {
                 const eventProps = event._source;
                 graphics.push(new Graphic({
                     attributes: {
                         ObjectID: event._id,
                         sessionId,
+                        interactionCount: i,
                         topic: eventProps.message,
                         scale: eventProps.map_scale,
                         zoom: eventProps.map_zoom,
@@ -62,6 +63,11 @@ export default class DataProvider{
                 new Field ({
                     name: "zoom",
                     alias: "Zoom",
+                    type: "double"
+                }),
+                new Field ({
+                    name: "interactionCount",
+                    alias: "InteractionCount",
                     type: "double"
                 }),
                 new Field ({
