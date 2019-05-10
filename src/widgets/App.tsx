@@ -5,7 +5,7 @@ import {
   property,
   subclass
 } from "esri/core/accessorSupport/decorators";
-import { renderable, tsx } from "esri/widgets/support/widget";
+import { tsx } from "esri/widgets/support/widget";
 import {watch, whenTrue} from "esri/core/watchUtils";
 import EsriMap from "esri/Map";
 import FeatureLayer from "esri/layers/FeatureLayer";

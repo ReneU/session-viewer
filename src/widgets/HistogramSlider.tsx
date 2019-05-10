@@ -32,7 +32,6 @@ export default class HistogramSlider extends declared(Accessor) {
       layer: this.layer,
       field: this.field,
       basemap: "dark-gray",
-      //normalizationField: "TOTPOP_CY",
       maxValue: 50000,
       theme: "extremes",
       legendOptions: {
@@ -40,7 +39,7 @@ export default class HistogramSlider extends declared(Accessor) {
       }
     };
 
-    let sliderParams: ColorSlider = {
+    let sliderParams: any = {
       numHandles: 3,
       syncedHandles: true,
       container: "slider",
@@ -60,12 +59,12 @@ export default class HistogramSlider extends declared(Accessor) {
       .then(histogram => {
         sliderParams.histogram = histogram;
 
-        var colorSlider = new ColorSlider(sliderParams);
+        const colorSlider = new ColorSlider(sliderParams);
         this.onWidgetReady()
 
         colorSlider.on("data-change", () => {
           const visualVariable = clone(colorSlider.visualVariable)
-          var renderer = this.layer.renderer.clone();
+          const renderer = clone(this.layer.renderer);
           renderer.visualVariables = [visualVariable];
           this.onRendererChange(renderer);
         });
