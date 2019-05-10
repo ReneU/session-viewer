@@ -16,6 +16,7 @@ export default class HistogramSlider extends declared(Accessor) {
   @property() field: string;
   @property() view: MapView;
   @property() onRendererChange: (renderer: Renderer) => void;
+  @property() onWidgetReady: () => void;
 
   constructor(params: HistogramSliderParams){
     super();
@@ -33,7 +34,10 @@ export default class HistogramSlider extends declared(Accessor) {
       basemap: "dark-gray",
       //normalizationField: "TOTPOP_CY",
       maxValue: 50000,
-      theme: "extremes"
+      theme: "extremes",
+      legendOptions: {
+        title: "Scale Extremes"
+      }
     };
 
     let sliderParams: ColorSlider = {
@@ -57,7 +61,7 @@ export default class HistogramSlider extends declared(Accessor) {
         sliderParams.histogram = histogram;
 
         var colorSlider = new ColorSlider(sliderParams);
-        this.view.ui.add("slider", "bottom-left");
+        this.onWidgetReady()
 
         colorSlider.on("data-change", () => {
           const visualVariable = clone(colorSlider.visualVariable)

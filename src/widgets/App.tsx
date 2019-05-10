@@ -11,6 +11,8 @@ import EsriMap from "esri/Map";
 import FeatureLayer from "esri/layers/FeatureLayer";
 import MapView from "esri/views/MapView";
 import Widget from "esri/widgets/Widget";
+import Expand from "esri/widgets/Expand";
+import Legend from "esri/widgets/Legend";
 import Extent from "esri/geometry/Extent";
 
 import { Header } from "./Header";
@@ -43,7 +45,6 @@ export default class App extends declared(Widget) {
   @property() viewRight: MapView;
   @property() layerLeft: FeatureLayer;
   @property() layerRight: FeatureLayer;
-  @renderable()
   @property() histogramSlider: HistogramSlider;
 
   constructor(params: AppViewParams) {
@@ -67,24 +68,19 @@ export default class App extends declared(Widget) {
     });
     viewRight.ui.components = [];
     const dataProvider = new DataProvider();
-    dataProvider.getFeatureLayers(params.appIds[0], viewLeft)
+    const layerLeftReady = dataProvider.getFeatureLayers(params.appIds[0], viewLeft)
       .then((layer: FeatureLayer) => {
         this.mapLeft.add(layer);
         this.layerLeft = layer;
       });
-    dataProvider.getFeatureLayers(params.appIds[1], viewRight)
+      const layerRightReady = dataProvider.getFeatureLayers(params.appIds[1], viewRight)
       .then((layer: FeatureLayer) => {
         this.mapRight.add(layer);
         this.layerRight = layer;
       });
     this.synchronizeViews();
-    this.viewLeft.when((view: MapView) => {
-      this.histogramSlider = new HistogramSlider({layer: this.layerLeft, field: "scale", view: view});
-      this.histogramSlider.onRendererChange = renderer => {
-        this.layerLeft.renderer = renderer;
-        this.layerRight.renderer = renderer;
-      }
-    })
+    Promise.all([layerLeftReady, layerRightReady, this.viewLeft.when(), this.viewRight.when()])
+      .then(() => this.onViewsReady());
   }
 
   render() {
@@ -105,6 +101,35 @@ export default class App extends declared(Widget) {
 
   private onRightReady(element: HTMLDivElement) {
     this.viewRight.container = element;
+  }
+
+  private onViewsReady(){
+    this.initializeHistogramSlider()
+    this.initializeLegend()
+  }
+
+  private initializeHistogramSlider() {
+    this.histogramSlider = new HistogramSlider({layer: this.layerRight, field: "scale", view: this.viewRight});
+    this.histogramSlider.onWidgetReady = () => {
+      const expandWidget = new Expand({
+        expandIconClass: "esri-icon-settings2",
+        view: this.viewRight,
+        content: document.getElementById("slider") as Node
+      });
+      this.viewRight.ui.add(expandWidget, "bottom-right");
+    };
+    this.histogramSlider.onRendererChange = renderer => {
+      this.layerLeft.renderer = renderer;
+      this.layerRight.renderer = renderer;
+    }
+  }
+
+  private initializeLegend(){
+    var legend = new Legend({
+      view: this.viewLeft
+    });
+    
+    this.viewLeft.ui.add(legend, "bottom-left");
   }
 
   private synchronizeViews () {
