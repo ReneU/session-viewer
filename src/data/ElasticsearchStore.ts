@@ -34,7 +34,7 @@ export default class ElasticsearchStore {
                             "top_hits":{  
                                "sort":[  
                                   {  
-                                     "timestamp.keyword":{  
+                                     "timestamp":{  
                                         "order":"asc",
                                         "unmapped_type":"long"
                                      }

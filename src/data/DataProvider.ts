@@ -17,8 +17,10 @@ export default class DataProvider{
     toGraphics(data: any){
         return data.sessions.buckets.reduce((graphics: Graphic[], session: Session) => {
             const sessionId = session.key;
+            let sessionStartDate: number;
             session.events.hits.hits.forEach((event: Event, i: number) => {
                 const eventProps = event._source;
+                const sessionTime = sessionStartDate ? eventProps.timestamp - sessionStartDate : 0;
                 graphics.push(new Graphic({
                     attributes: {
                         ObjectID: event._id,
@@ -27,10 +29,13 @@ export default class DataProvider{
                         topic: eventProps.message,
                         scale: eventProps.map_scale,
                         zoom: eventProps.map_zoom,
-                        timestamp: eventProps.timestamp,
+                        sessionTime
                     },
                     geometry: new Point(eventProps.map_center)
                 }));
+                if(i === 0){
+                    sessionStartDate = eventProps.timestamp;
+                }
             });
             return graphics;
         }, [])
