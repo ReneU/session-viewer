@@ -1,6 +1,6 @@
 $blue: #0079c1;
 $gray: #efefef;
-$white: #fff;
+$white: #efefef;
 $black:#242424;
 $orange:#ff642e;
 
@@ -84,6 +84,18 @@ header.top-nav {
   width: 50%;
   height: 100%;
   float: right;
+}
+
+/* histogram slider */
+.esri-renderer-slider {
+  background-color: $black;
+}
+
+.esri-top-label-node>span,
+.esri-handle-label-span {
+  color: $white;
+  font-size: 12px;
+  font-family: "Avenir Next W00", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .main {
