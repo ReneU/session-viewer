@@ -11,8 +11,6 @@ import EsriMap from "esri/Map";
 import FeatureLayer from "esri/layers/FeatureLayer";
 import MapView from "esri/views/MapView";
 import Widget from "esri/widgets/Widget";
-import Expand from "esri/widgets/Expand";
-import Legend from "esri/widgets/Legend";
 import Extent from "esri/geometry/Extent";
 
 import { Header } from "./Header";
@@ -105,35 +103,23 @@ export default class App extends declared(Widget) {
 
   private onViewsReady(){
     this.initializeHistogramSliders()
-    this.initializeLegends()
   }
 
   private initializeHistogramSliders() {
-    const leftNodeId = "slider-left";
-    const histogramSliderLeft = new HistogramSlider({layer: this.layerLeft, field: "sessionTime", view: this.viewLeft, nodeId: leftNodeId});
-    histogramSliderLeft.onWidgetReady = () => {
-      this.viewLeft.ui.add("slider-left", "bottom-right");
-    };
-    histogramSliderLeft.onRendererChange = renderer => {
-      this.layerLeft.renderer = renderer;
-    }
-    const rightNodeId = "slider-right";
-    const histogramSliderRight = new HistogramSlider({layer: this.layerRight, field: "sessionTime", view: this.viewRight, nodeId: rightNodeId});
-    histogramSliderRight.onWidgetReady = () => {
-      this.viewRight.ui.add("slider-right", "bottom-left");
-    };
-    histogramSliderRight.onRendererChange = renderer => {
-      this.layerRight.renderer = renderer;
-    }
+    this.initializeHistogramSlider({layer: this.layerLeft, field: "sessionTime", view: this.viewLeft, position: "left"});
+    this.initializeHistogramSlider({layer: this.layerRight, field: "sessionTime", view: this.viewRight, position: "right"});
   }
 
-  private initializeLegends(){
-    this.viewLeft.ui.add(new Legend({
-      view: this.viewLeft
-    }), "bottom-left");
-    this.viewRight.ui.add(new Legend({
-      view: this.viewRight
-    }), "bottom-right");
+  private initializeHistogramSlider({view, layer, field, position}: {view: MapView, layer: FeatureLayer, field: string, position: string}){
+    const nodeId = `slider-${position}`;
+    const viewPosition = `bottom-${position}`;
+    const slider = new HistogramSlider({layer, field, view, nodeId});
+    slider.onWidgetReady = () => {
+      view.ui.add(nodeId, viewPosition);
+    };
+    slider.onRendererChange = renderer => {
+      layer.renderer = renderer;
+    }
   }
 
   private synchronizeViews () {
