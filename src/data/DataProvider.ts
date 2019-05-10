@@ -76,9 +76,9 @@ export default class DataProvider{
                     type: "double"
                 }),
                 new Field ({
-                    name: "timestamp",
-                    alias: "Timestamp",
-                    type: "date"
+                    name: "sessionTime",
+                    alias: "SessionTime",
+                    type: "double"
                 })
             ]
         });

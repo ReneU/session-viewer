@@ -104,32 +104,36 @@ export default class App extends declared(Widget) {
   }
 
   private onViewsReady(){
-    this.initializeHistogramSlider()
-    this.initializeLegend()
+    this.initializeHistogramSliders()
+    this.initializeLegends()
   }
 
-  private initializeHistogramSlider() {
-    this.histogramSlider = new HistogramSlider({layer: this.layerRight, field: "scale", view: this.viewRight});
-    this.histogramSlider.onWidgetReady = () => {
-      const expandWidget = new Expand({
-        expandIconClass: "esri-icon-settings2",
-        view: this.viewRight,
-        content: document.getElementById("slider") as Node
-      });
-      this.viewRight.ui.add(expandWidget, "bottom-right");
+  private initializeHistogramSliders() {
+    const leftNodeId = "slider-left";
+    const histogramSliderLeft = new HistogramSlider({layer: this.layerLeft, field: "sessionTime", view: this.viewLeft, nodeId: leftNodeId});
+    histogramSliderLeft.onWidgetReady = () => {
+      this.viewLeft.ui.add("slider-left", "bottom-right");
     };
-    this.histogramSlider.onRendererChange = renderer => {
+    histogramSliderLeft.onRendererChange = renderer => {
       this.layerLeft.renderer = renderer;
+    }
+    const rightNodeId = "slider-right";
+    const histogramSliderRight = new HistogramSlider({layer: this.layerRight, field: "sessionTime", view: this.viewRight, nodeId: rightNodeId});
+    histogramSliderRight.onWidgetReady = () => {
+      this.viewRight.ui.add("slider-right", "bottom-left");
+    };
+    histogramSliderRight.onRendererChange = renderer => {
       this.layerRight.renderer = renderer;
     }
   }
 
-  private initializeLegend(){
-    var legend = new Legend({
+  private initializeLegends(){
+    this.viewLeft.ui.add(new Legend({
       view: this.viewLeft
-    });
-    
-    this.viewLeft.ui.add(legend, "bottom-left");
+    }), "bottom-left");
+    this.viewRight.ui.add(new Legend({
+      view: this.viewRight
+    }), "bottom-right");
   }
 
   private synchronizeViews () {

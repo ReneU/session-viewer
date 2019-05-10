@@ -15,6 +15,7 @@ export default class HistogramSlider extends declared(Accessor) {
   @property() layer: FeatureLayer;
   @property() field: string;
   @property() view: MapView;
+  @property() nodeId: string;
   @property() onRendererChange: (renderer: Renderer) => void;
   @property() onWidgetReady: () => void;
 
@@ -23,6 +24,7 @@ export default class HistogramSlider extends declared(Accessor) {
     this.layer = params.layer;
     this.field = params.field;
     this.view = params.view;
+    this.nodeId = params.nodeId;
     this.updateHistogram();
   }
 
@@ -32,17 +34,17 @@ export default class HistogramSlider extends declared(Accessor) {
       layer: this.layer,
       field: this.field,
       basemap: "dark-gray",
-      maxValue: 50000,
+      //maxValue: 50000,
       theme: "extremes",
       legendOptions: {
-        title: "Scale Extremes"
+        title: "Session Duration"
       }
     };
 
     let sliderParams: any = {
       numHandles: 3,
       syncedHandles: true,
-      container: "slider",
+      container: this.nodeId,
     };
     this.layer
       .when(() => createContinuousRenderer(colorParams))
@@ -79,4 +81,5 @@ interface HistogramSliderParams {
   layer: FeatureLayer,
   field: string,
   view: MapView
+  nodeId: string,
 }
