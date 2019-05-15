@@ -65,13 +65,13 @@ export default class App extends declared(Widget) {
       }
     });
     viewRight.ui.components = [];
-    const dataProvider = new DataProvider();
-    const layerLeftReady = dataProvider.getFeatureLayers(params.appIds[0], viewLeft)
+    const dataProvider = new DataProvider(params.appIds);
+    const layerLeftReady = dataProvider.getPointCloudLayer(params.appIds[0], viewLeft)
       .then((layer: FeatureLayer) => {
         this.mapLeft.add(layer);
         this.layerLeft = layer;
       });
-      const layerRightReady = dataProvider.getFeatureLayers(params.appIds[1], viewRight)
+      const layerRightReady = dataProvider.getPointCloudLayer(params.appIds[1], viewRight)
       .then((layer: FeatureLayer) => {
         this.mapRight.add(layer);
         this.layerRight = layer;

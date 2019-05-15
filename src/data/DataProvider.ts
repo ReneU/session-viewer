@@ -1,5 +1,5 @@
 import ElasticsearchStore from './ElasticsearchStore';
-import {Session, Event} from "./DataInterfaces";
+import {ElasticResponse, Session, Event} from "./DataInterfaces";
 
 import FeatureLayer from 'esri/layers/FeatureLayer';
 import Field from 'esri/layers/support/Field';
@@ -9,15 +9,21 @@ import Graphic from "esri/Graphic";
 
 export default class DataProvider{
 
-    getFeatureLayers(appId: string, view: MapView){
-        return ElasticsearchStore.getAggregatedSessions(appId).then(response => {
+    constructor(appIds: string[]){
+        appIds.forEach((id: string) => {
+            this[id] = ElasticsearchStore.getAggregatedSessions(id);
+        });
+    }
+
+    getPointCloudLayer(appId: string, view: MapView){
+        return this[appId].then(response => {
             const graphics = this.toGraphics(response);
             return this.toFeatureLayer(graphics, view);
         });
     }
 
-    toGraphics(data: any){
-        return data.sessions.buckets.reduce((graphics: Graphic[], session: Session) => {
+    private toGraphics(elasticResponse: ElasticResponse){
+        return elasticResponse.sessions.buckets.reduce((graphics: Graphic[], session: Session) => {
             const sessionId = session.key;
             let sessionStartDate: number;
             session.events.hits.hits.forEach((event: Event, i: number) => {
