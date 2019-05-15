@@ -1,9 +1,11 @@
 import ElasticsearchStore from './ElasticsearchStore';
-import Graphic from "esri/Graphic";
+import {Session, Event} from "./DataInterfaces";
+
+import FeatureLayer from 'esri/layers/FeatureLayer';
+import Field from 'esri/layers/support/Field';
+import MapView from 'esri/views/MapView';
 import { Point } from 'esri/geometry';
-import FeatureLayer = require('esri/layers/FeatureLayer');
-import Field = require('esri/layers/support/Field');
-import MapView = require('esri/views/MapView');
+import Graphic from "esri/Graphic";
 
 export default class DataProvider{
 
@@ -83,22 +85,4 @@ export default class DataProvider{
             ]
         });
     }
-}
-
-interface Session {
-    key: string
-    events: any
-}
-
-interface Event {
-    _id: String
-    _source: Source
-}
-
-interface Source {
-    message: string,
-    map_scale: number,
-    map_zoom: number,
-    timestamp: number,
-    map_center: Object
 }
