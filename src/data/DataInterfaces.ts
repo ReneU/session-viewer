@@ -1,3 +1,5 @@
+import { Point } from 'esri/geometry';
+
 export interface ElasticResponse {
     sessions: ElasticSessions
 }
@@ -21,10 +23,5 @@ interface Source {
     map_scale: number,
     map_zoom: number,
     timestamp: number,
-    map_center: ElasticPoint
-}
-
-interface ElasticPoint {
-    x: number,
-    y: number
+    map_center: Point
 }

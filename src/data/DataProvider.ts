@@ -1,9 +1,9 @@
 import ElasticsearchStore from './ElasticsearchStore';
 import {ElasticResponse, Session, Event} from "./DataInterfaces";
 
+import GraphicsLayer from 'esri/layers/GraphicsLayer';
 import FeatureLayer from 'esri/layers/FeatureLayer';
 import Field from 'esri/layers/support/Field';
-import MapView from 'esri/views/MapView';
 import { Point } from 'esri/geometry';
 import Graphic from "esri/Graphic";
 
@@ -15,15 +15,20 @@ export default class DataProvider{
         });
     }
 
-    getPointCloudLayer(appId: string, view: MapView){
-        return this[appId].then(response => {
-            const graphics = this.toGraphics(response);
-            return this.toFeatureLayer(graphics, view);
+    getPointCloudLayer(appId: string){
+        return this[appId].then((response: ElasticResponse) => {
+            return this.toPointLayer(response);
         });
     }
 
-    private toGraphics(elasticResponse: ElasticResponse){
-        return elasticResponse.sessions.buckets.reduce((graphics: Graphic[], session: Session) => {
+    getTrajectoriesLayer(appId: string){
+        return this[appId].then((response: ElasticResponse) => {
+            return this.toPolylineLayer(response);
+        })
+    }
+
+    private toPointLayer(elasticResponse: ElasticResponse){
+        const pointGraphics = elasticResponse.sessions.buckets.reduce((graphics: Graphic[], session: Session) => {
             const sessionId = session.key;
             let sessionStartDate: number;
             session.events.hits.hits.forEach((event: Event, i: number) => {
@@ -47,48 +52,115 @@ export default class DataProvider{
             });
             return graphics;
         }, [])
+        return toFeatureLayer(pointGraphics);
     }
 
-    private toFeatureLayer(source: Graphic[], view: MapView){
-        return new FeatureLayer({
-            source,
-            fields: [
-                new Field({
-                    name: "ObjectID",
-                    alias: "ObjectID",
-                    type: "oid"
-                }),
-                new Field({
-                    name: "sessionId",
-                    alias: "SessionID",
-                    type: "string"
-                }),
-                new Field ({
-                    name: "topic",
-                    alias: "Topic",
-                    type: "string"
-                }),
-                new Field ({
-                    name: "scale",
-                    alias: "Scale",
-                    type: "double"
-                }),
-                new Field ({
-                    name: "zoom",
-                    alias: "Zoom",
-                    type: "double"
-                }),
-                new Field ({
-                    name: "interactionCount",
-                    alias: "InteractionCount",
-                    type: "double"
-                }),
-                new Field ({
-                    name: "sessionTime",
-                    alias: "SessionTime",
-                    type: "double"
-                })
-            ]
+    private toPolylineLayer (elasticReponse: ElasticResponse) {
+        let trajectories = [];
+        elasticReponse.sessions.buckets.forEach(session => {
+            const events = session.events.hits.hits;
+            const track = {
+                type: 'polyline',
+                paths: [],
+                spatialReference: {wkid: 3857}
+            }
+            events.forEach((event: Event) => {
+                const eventProps = event._source;
+                if (!track.spatialReference) {
+                    track.spatialReference = { wkid: eventProps.map_center.spatialReference.wkid }
+                }
+                track.paths.push([eventProps.map_center.x, eventProps.map_center.y]);
+            });
+            trajectories.push(track);
         });
+        const trajectoryGraphics = getGraphics(trajectories);
+        const trajectoriesLayer = new GraphicsLayer({ title: 'Trajectories', id: 'trajectories' });
+        trajectoriesLayer.addMany(trajectoryGraphics);
+        return trajectoriesLayer;
     }
 }
+
+const toFeatureLayer = (source: Graphic[]) => {
+    return new FeatureLayer({
+        source,
+        fields: [
+            new Field({
+                name: "ObjectID",
+                alias: "ObjectID",
+                type: "oid"
+            }),
+            new Field({
+                name: "sessionId",
+                alias: "SessionID",
+                type: "string"
+            }),
+            new Field ({
+                name: "topic",
+                alias: "Topic",
+                type: "string"
+            }),
+            new Field ({
+                name: "scale",
+                alias: "Scale",
+                type: "double"
+            }),
+            new Field ({
+                name: "zoom",
+                alias: "Zoom",
+                type: "double"
+            }),
+            new Field ({
+                name: "interactionCount",
+                alias: "InteractionCount",
+                type: "double"
+            }),
+            new Field ({
+                name: "sessionTime",
+                alias: "SessionTime",
+                type: "double"
+            })
+        ]
+    });
+}
+
+
+const getSymbolForFeature = (feature: any) => {
+    const width = feature.width || 2;
+    const size = feature.size || 1;
+    switch (feature.type) {
+        case 'polygon':
+        return {
+            type: 'simple-fill',
+            color: [77, 175, 74, 0.5],
+            outline: {
+            color: [255, 255, 255],
+            width: 1
+            }
+        };
+        case 'point':
+        return {
+            type: 'simple-marker',
+            color: [55, 126, 184],
+            size,
+            outline: {
+            color: [0, 0, 0],
+            width: 1
+            }
+        };
+        case 'polyline':
+        return {
+            type: 'simple-line',
+            color: [255, 127, 0],
+            width
+        };
+    }
+};
+    
+const getGraphics = (features: any) => {
+    return features.map((feature: any) => {
+        return new Graphic({
+        geometry: feature,
+        symbol: getSymbolForFeature(feature)
+        });
+    });
+};

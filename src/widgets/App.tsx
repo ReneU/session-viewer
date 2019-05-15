@@ -7,11 +7,12 @@ import {
 } from "esri/core/accessorSupport/decorators";
 import { tsx } from "esri/widgets/support/widget";
 import {watch, whenTrue} from "esri/core/watchUtils";
-import EsriMap from "esri/Map";
+import GraphicsLayer from "esri/layers/GraphicsLayer";
 import FeatureLayer from "esri/layers/FeatureLayer";
 import MapView from "esri/views/MapView";
 import Widget from "esri/widgets/Widget";
 import Extent from "esri/geometry/Extent";
+import EsriMap from "esri/Map";
 
 import { Header } from "./Header";
 import HistogramSlider from "./HistogramSlider";
@@ -65,18 +66,21 @@ export default class App extends declared(Widget) {
       }
     });
     viewRight.ui.components = [];
+    this.synchronizeViews();
+
     const dataProvider = new DataProvider(params.appIds);
-    const layerLeftReady = dataProvider.getPointCloudLayer(params.appIds[0], viewLeft)
+
+    dataProvider.getTrajectoriesLayer(params.appIds[0]).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
+    const layerLeftReady = dataProvider.getPointCloudLayer(params.appIds[0])
       .then((layer: FeatureLayer) => {
         this.mapLeft.add(layer);
         this.layerLeft = layer;
       });
-      const layerRightReady = dataProvider.getPointCloudLayer(params.appIds[1], viewRight)
+    const layerRightReady = dataProvider.getPointCloudLayer(params.appIds[1])
       .then((layer: FeatureLayer) => {
         this.mapRight.add(layer);
         this.layerRight = layer;
       });
-    this.synchronizeViews();
     Promise.all([layerLeftReady, layerRightReady, this.viewLeft.when(), this.viewRight.when()])
       .then(() => this.onViewsReady());
   }
