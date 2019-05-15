@@ -6,6 +6,7 @@ import FeatureLayer from 'esri/layers/FeatureLayer';
 import Field from 'esri/layers/support/Field';
 import { Point } from 'esri/geometry';
 import Graphic from "esri/Graphic";
+import SpatialReference = require('esri/geometry/SpatialReference');
 
 export default class DataProvider{
 
@@ -56,18 +57,17 @@ export default class DataProvider{
     }
 
     private toPolylineLayer (elasticReponse: ElasticResponse) {
-        let trajectories = [];
+        let trajectories: Polyline[] = [];
         elasticReponse.sessions.buckets.forEach(session => {
             const events = session.events.hits.hits;
-            const track = {
+            const track: Polyline = {
                 type: 'polyline',
-                paths: [],
-                spatialReference: {wkid: 3857}
+                paths: []
             }
             events.forEach((event: Event) => {
                 const eventProps = event._source;
                 if (!track.spatialReference) {
-                    track.spatialReference = { wkid: eventProps.map_center.spatialReference.wkid }
+                    track.spatialReference = new SpatialReference({ wkid: eventProps.map_center.spatialReference.wkid })
                 }
                 track.paths.push([eventProps.map_center.x, eventProps.map_center.y]);
             });
@@ -82,6 +82,7 @@ export default class DataProvider{
 
 const toFeatureLayer = (source: Graphic[]) => {
     return new FeatureLayer({
+        title: "Interactions",
         source,
         fields: [
             new Field({
@@ -164,3 +165,9 @@ const getGraphics = (features: any) => {
         });
     });
 };
+
+interface Polyline {
+    type: string,
+    paths: number[][]
+    spatialReference?: SpatialReference
+}

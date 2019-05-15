@@ -11,6 +11,7 @@ import GraphicsLayer from "esri/layers/GraphicsLayer";
 import FeatureLayer from "esri/layers/FeatureLayer";
 import MapView from "esri/views/MapView";
 import Widget from "esri/widgets/Widget";
+import LayerList from "esri/widgets/LayerList";
 import Extent from "esri/geometry/Extent";
 import EsriMap from "esri/Map";
 
@@ -58,6 +59,7 @@ export default class App extends declared(Widget) {
       }
     });
     viewLeft.ui.components = [];
+    viewLeft.ui.add(new LayerList({view: viewLeft}), {position: "top-left"} );
     const viewRight = this.viewRight = new MapView({
       extent: params.initialExtent,
       map: this.mapRight,
@@ -66,6 +68,7 @@ export default class App extends declared(Widget) {
       }
     });
     viewRight.ui.components = [];
+    viewRight.ui.add(new LayerList({view: viewRight}), {position: "top-right" });
     this.synchronizeViews();
 
     const dataProvider = new DataProvider(params.appIds);
@@ -76,6 +79,7 @@ export default class App extends declared(Widget) {
         this.mapLeft.add(layer);
         this.layerLeft = layer;
       });
+    dataProvider.getTrajectoriesLayer(params.appIds[1]).then((layer: GraphicsLayer) => this.mapRight.add(layer));
     const layerRightReady = dataProvider.getPointCloudLayer(params.appIds[1])
       .then((layer: FeatureLayer) => {
         this.mapRight.add(layer);
