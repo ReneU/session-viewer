@@ -59,7 +59,7 @@ export default class App extends declared(Widget) {
       }
     });
     viewLeft.ui.components = [];
-    viewLeft.ui.add(new LayerList({view: viewLeft}), {position: "top-left"} );
+    viewLeft.ui.add(new LayerList({view: viewLeft}), "top-left");
     const viewRight = this.viewRight = new MapView({
       extent: params.initialExtent,
       map: this.mapRight,
@@ -68,7 +68,7 @@ export default class App extends declared(Widget) {
       }
     });
     viewRight.ui.components = [];
-    viewRight.ui.add(new LayerList({view: viewRight}), {position: "top-right" });
+    viewRight.ui.add(new LayerList({view: viewRight}), "top-right");
     this.synchronizeViews();
 
     const dataProvider = new DataProvider(params.appIds);

@@ -1,12 +1,12 @@
 import ElasticsearchStore from './ElasticsearchStore';
 import {ElasticResponse, Session, Event} from "./DataInterfaces";
 
+import SpatialReference from 'esri/geometry/SpatialReference';
 import GraphicsLayer from 'esri/layers/GraphicsLayer';
 import FeatureLayer from 'esri/layers/FeatureLayer';
 import Field from 'esri/layers/support/Field';
 import { Point } from 'esri/geometry';
 import Graphic from "esri/Graphic";
-import SpatialReference = require('esri/geometry/SpatialReference');
 
 export default class DataProvider{
 
@@ -18,66 +18,66 @@ export default class DataProvider{
 
     getPointCloudLayer(appId: string){
         return this[appId].then((response: ElasticResponse) => {
-            return this.toPointLayer(response);
+            return toPointLayer(response);
         });
     }
 
     getTrajectoriesLayer(appId: string){
         return this[appId].then((response: ElasticResponse) => {
-            return this.toPolylineLayer(response);
+            return toPolylineLayer(response);
         })
     }
+}
 
-    private toPointLayer(elasticResponse: ElasticResponse){
-        const pointGraphics = elasticResponse.sessions.buckets.reduce((graphics: Graphic[], session: Session) => {
-            const sessionId = session.key;
-            let sessionStartDate: number;
-            session.events.hits.hits.forEach((event: Event, i: number) => {
-                const eventProps = event._source;
-                const sessionTime = sessionStartDate ? eventProps.timestamp - sessionStartDate : 0;
-                graphics.push(new Graphic({
-                    attributes: {
-                        ObjectID: event._id,
-                        sessionId,
-                        interactionCount: i,
-                        topic: eventProps.message,
-                        scale: eventProps.map_scale,
-                        zoom: eventProps.map_zoom,
-                        sessionTime
-                    },
-                    geometry: new Point(eventProps.map_center)
-                }));
-                if(i === 0){
-                    sessionStartDate = eventProps.timestamp;
-                }
-            });
-            return graphics;
-        }, [])
-        return toFeatureLayer(pointGraphics);
-    }
-
-    private toPolylineLayer (elasticReponse: ElasticResponse) {
-        let trajectories: Polyline[] = [];
-        elasticReponse.sessions.buckets.forEach(session => {
-            const events = session.events.hits.hits;
-            const track: Polyline = {
-                type: 'polyline',
-                paths: []
+const toPointLayer = (elasticResponse: ElasticResponse) => {
+    const pointGraphics = elasticResponse.sessions.buckets.reduce((graphics: Graphic[], session: Session) => {
+        const sessionId = session.key;
+        let sessionStartDate: number;
+        session.events.hits.hits.forEach((event: Event, i: number) => {
+            const eventProps = event._source;
+            const sessionTime = sessionStartDate ? eventProps.timestamp - sessionStartDate : 0;
+            graphics.push(new Graphic({
+                attributes: {
+                    ObjectID: event._id,
+                    sessionId,
+                    interactionCount: i,
+                    topic: eventProps.message,
+                    scale: eventProps.map_scale,
+                    zoom: eventProps.map_zoom,
+                    sessionTime
+                },
+                geometry: new Point(eventProps.map_center)
+            }));
+            if(i === 0){
+                sessionStartDate = eventProps.timestamp;
             }
-            events.forEach((event: Event) => {
-                const eventProps = event._source;
-                if (!track.spatialReference) {
-                    track.spatialReference = new SpatialReference({ wkid: eventProps.map_center.spatialReference.wkid })
-                }
-                track.paths.push([eventProps.map_center.x, eventProps.map_center.y]);
-            });
-            trajectories.push(track);
         });
-        const trajectoryGraphics = getGraphics(trajectories);
-        const trajectoriesLayer = new GraphicsLayer({ title: 'Trajectories', id: 'trajectories' });
-        trajectoriesLayer.addMany(trajectoryGraphics);
-        return trajectoriesLayer;
-    }
+        return graphics;
+    }, [])
+    return toFeatureLayer(pointGraphics);
+}
+
+const toPolylineLayer = (elasticReponse: ElasticResponse) => {
+    let trajectories: Polyline[] = [];
+    elasticReponse.sessions.buckets.forEach(session => {
+        const events = session.events.hits.hits;
+        const track: Polyline = {
+            type: 'polyline',
+            paths: []
+        }
+        events.forEach((event: Event) => {
+            const eventProps = event._source;
+            if (!track.spatialReference) {
+                track.spatialReference = new SpatialReference({ wkid: eventProps.map_center.spatialReference.wkid })
+            }
+            track.paths.push([eventProps.map_center.x, eventProps.map_center.y]);
+        });
+        trajectories.push(track);
+    });
+    const trajectoryGraphics = getGraphics(trajectories);
+    const trajectoriesLayer = new GraphicsLayer({ title: 'Trajectories', id: 'trajectories' });
+    trajectoriesLayer.addMany(trajectoryGraphics);
+    return trajectoriesLayer;
 }
 
 const toFeatureLayer = (source: Graphic[]) => {
