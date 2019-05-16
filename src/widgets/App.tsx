@@ -73,14 +73,16 @@ export default class App extends declared(Widget) {
 
     const dataProvider = new DataProvider(params.appIds);
 
-    dataProvider.getTrajectoriesLayer(params.appIds[0]).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
-    const layerLeftReady = dataProvider.getPointCloudLayer(params.appIds[0])
+    dataProvider.getSessionTracksLayer(params.appIds[0]).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
+    dataProvider.getCharacteristicPointsLayer(params.appIds[0], viewLeft).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
+    const layerLeftReady = dataProvider.getInteractionPointsLayer(params.appIds[0])
       .then((layer: FeatureLayer) => {
         this.mapLeft.add(layer);
         this.layerLeft = layer;
       });
-    dataProvider.getTrajectoriesLayer(params.appIds[1]).then((layer: GraphicsLayer) => this.mapRight.add(layer));
-    const layerRightReady = dataProvider.getPointCloudLayer(params.appIds[1])
+    dataProvider.getSessionTracksLayer(params.appIds[1]).then((layer: GraphicsLayer) => this.mapRight.add(layer));
+    dataProvider.getCharacteristicPointsLayer(params.appIds[1], viewRight).then((layer: GraphicsLayer) => this.mapRight.add(layer));
+    const layerRightReady = dataProvider.getInteractionPointsLayer(params.appIds[1])
       .then((layer: FeatureLayer) => {
         this.mapRight.add(layer);
         this.layerRight = layer;

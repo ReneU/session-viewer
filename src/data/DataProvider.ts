@@ -1,12 +1,22 @@
 import ElasticsearchStore from './ElasticsearchStore';
 import {ElasticResponse, Session, Event} from "./DataInterfaces";
 
+import {createContinuousRenderer} from "esri/renderers/smartMapping/creators/color";
 import SpatialReference from 'esri/geometry/SpatialReference';
+import geometryEngine from "esri/geometry/geometryEngine";
 import GraphicsLayer from 'esri/layers/GraphicsLayer';
 import FeatureLayer from 'esri/layers/FeatureLayer';
 import Field from 'esri/layers/support/Field';
+import MapView from 'esri/views/MapView';
 import { Point } from 'esri/geometry';
 import Graphic from "esri/Graphic";
+
+const CONSTANTS = {
+    minRadius: 50,
+    maxRadius: 150,
+    maxDistance: 3000,
+    timeThreshold: 3000
+  };
 
 export default class DataProvider{
 
@@ -16,50 +26,33 @@ export default class DataProvider{
         });
     }
 
-    getPointCloudLayer(appId: string){
+    getInteractionPointsLayer(appId: string){
         return this[appId].then((response: ElasticResponse) => {
-            return toPointLayer(response);
+            return toInteractionPointsLayer(response);
         });
     }
 
-    getTrajectoriesLayer(appId: string){
+    getSessionTracksLayer(appId: string){
         return this[appId].then((response: ElasticResponse) => {
-            return toPolylineLayer(response);
-        })
+            return toSessionTracksLayer(response);
+        });
+    }
+
+    getCharacteristicPointsLayer(appId: string, view: MapView) {
+        return this[appId].then((response: ElasticResponse) => {
+            return toCharacteristicPointsLayer(response, view);
+        });
     }
 }
 
-const toPointLayer = (elasticResponse: ElasticResponse) => {
-    const pointGraphics = elasticResponse.sessions.buckets.reduce((graphics: Graphic[], session: Session) => {
-        const sessionId = session.key;
-        let sessionStartDate: number;
-        session.events.hits.hits.forEach((event: Event, i: number) => {
-            const eventProps = event._source;
-            const sessionTime = sessionStartDate ? eventProps.timestamp - sessionStartDate : 0;
-            graphics.push(new Graphic({
-                attributes: {
-                    ObjectID: event._id,
-                    sessionId,
-                    interactionCount: i,
-                    topic: eventProps.message,
-                    scale: eventProps.map_scale,
-                    zoom: eventProps.map_zoom,
-                    sessionTime
-                },
-                geometry: new Point(eventProps.map_center)
-            }));
-            if(i === 0){
-                sessionStartDate = eventProps.timestamp;
-            }
-        });
-        return graphics;
-    }, [])
-    return toFeatureLayer(pointGraphics);
+const toInteractionPointsLayer = (response: ElasticResponse) => {
+    const pointGraphics = toPointGraphics(response)
+    return toFeatureLayer(pointGraphics, "Interactions");
 }
 
-const toPolylineLayer = (elasticReponse: ElasticResponse) => {
+const toSessionTracksLayer = (response: ElasticResponse) => {
     let trajectories: Polyline[] = [];
-    elasticReponse.sessions.buckets.forEach(session => {
+    response.sessions.buckets.forEach(session => {
         const events = session.events.hits.hits;
         const track: Polyline = {
             type: 'polyline',
@@ -74,15 +67,59 @@ const toPolylineLayer = (elasticReponse: ElasticResponse) => {
         });
         trajectories.push(track);
     });
-    const trajectoryGraphics = getGraphics(trajectories);
-    const trajectoriesLayer = new GraphicsLayer({ title: 'Trajectories', id: 'trajectories' });
-    trajectoriesLayer.addMany(trajectoryGraphics);
-    return trajectoriesLayer;
+    const trajectoryGraphics = toGraphics(trajectories);
+    const graphicsLayer = new GraphicsLayer({ title: 'Trajectories', id: 'trajectories', visible: false });
+    graphicsLayer.addMany(trajectoryGraphics);
+    return graphicsLayer;
 }
 
-const toFeatureLayer = (source: Graphic[]) => {
+const toCharacteristicPointsLayer = (response: ElasticResponse, view: MapView) => {
+    const filter = (evt: Event, idx: number, events: Event[]) => {
+        if(idx === 0) return true;
+        if(idx === events.length - 1) return false;
+        const eventProps = events[idx]._source;
+        const nextEventProps = events[idx + 1]._source;
+        const timeDelta = getTimeDelta(nextEventProps.timestamp, eventProps.timestamp);
+        return timeDelta >= CONSTANTS.timeThreshold && getDistance(eventProps.map_center, nextEventProps.map_center) < CONSTANTS.maxDistance
+    };
+    const pointGraphics = toPointGraphics(response, filter);
+    return toFeatureLayer(pointGraphics, "Characteristic Points");
+}
+
+function toPointGraphics(response: ElasticResponse, filter?: (evt: Event, idx: number, evts: Event[]) => {}) {
+    return response.sessions.buckets.reduce((tempGraphics: Graphic[], session: Session) => {
+        const sessionId = session.key;
+        let sessionStartDate: number;
+        const events = session.events.hits.hits;
+        events.forEach((event: Event, i: number) => {
+            const eventProps = event._source;
+            const sessionTime = sessionStartDate ? eventProps.timestamp - sessionStartDate : 0;
+            if (i === 0) {
+                sessionStartDate = eventProps.timestamp;
+            }
+            if(!filter || (filter && filter(event, i, events))){
+                tempGraphics.push(new Graphic({
+                    attributes: {
+                        ObjectID: event._id,
+                        sessionId,
+                        interactionCount: i,
+                        topic: eventProps.message,
+                        scale: eventProps.map_scale,
+                        zoom: eventProps.map_zoom,
+                        sessionTime
+                    },
+                    geometry: new Point(eventProps.map_center)
+                }));
+            }
+        });
+        return tempGraphics;
+    }, []);
+}
+
+const toFeatureLayer = (source: Graphic[], title: string) => {
     return new FeatureLayer({
-        title: "Interactions",
+        title,
+        visible: false,
         source,
         fields: [
             new Field({
@@ -125,17 +162,17 @@ const toFeatureLayer = (source: Graphic[]) => {
 }
 
 
-const getSymbolForFeature = (feature: any) => {
-    const width = feature.width || 2;
-    const size = feature.size || 1;
+const getSymbolFromGeometry = (feature: any) => {
+    const width = 2;
+    const size = 10;
     switch (feature.type) {
         case 'polygon':
         return {
             type: 'simple-fill',
             color: [77, 175, 74, 0.5],
             outline: {
-            color: [255, 255, 255],
-            width: 1
+                color: [255, 255, 255],
+                width: 1
             }
         };
         case 'point':
@@ -144,8 +181,8 @@ const getSymbolForFeature = (feature: any) => {
             color: [55, 126, 184],
             size,
             outline: {
-            color: [0, 0, 0],
-            width: 1
+                color: [0, 0, 0],
+                width: 1
             }
         };
         case 'polyline':
@@ -157,13 +194,31 @@ const getSymbolForFeature = (feature: any) => {
     }
 };
     
-const getGraphics = (features: any) => {
-    return features.map((feature: any) => {
+const toGraphics = (geometry: any) => {
+    return geometry.map((geometry: any) => {
         return new Graphic({
-        geometry: feature,
-        symbol: getSymbolForFeature(feature)
+        geometry: geometry,
+        attributes: geometry.attributes,
+        symbol: getSymbolFromGeometry(geometry)
         });
     });
+};
+
+const getFirstAndLastArrayItem = (array: any[]) => {
+    return {
+        first: array[0],
+        last: array[array.length - 1]
+    };
+};
+
+const getDistance = (from, to, esriUnit = 'meters') => {
+    from = new Point(from);
+    to = new Point(to);
+    return geometryEngine.distance(from, to);//, esriUnit);
+};
+
+const getTimeDelta = (first, second) => {
+    return new Date(new Date(first) - new Date(second)).getTime();
 };
 
 interface Polyline {
