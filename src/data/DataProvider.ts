@@ -32,15 +32,15 @@ export default class DataProvider{
         });
     }
 
-    getSessionTracksLayer(appId: string){
-        return this[appId].then((response: ElasticResponse) => {
-            return toSessionTracksLayer(response);
-        });
-    }
-
     getCharacteristicPointsLayer(appId: string, view: MapView) {
         return this[appId].then((response: ElasticResponse) => {
             return toCharacteristicPointsLayer(response, view);
+        });
+    }
+
+    getSessionTracksLayer(appId: string){
+        return this[appId].then((response: ElasticResponse) => {
+            return toSessionTracksLayer(response);
         });
     }
 }
@@ -48,6 +48,34 @@ export default class DataProvider{
 const toInteractionPointsLayer = (response: ElasticResponse) => {
     const pointGraphics = toPointGraphics(response)
     return toFeatureLayer(pointGraphics, "Interactions");
+}
+
+const toCharacteristicPointsLayer = (response: ElasticResponse, view: MapView) => {
+    const filter = (evt: Event, idx: number, events: Event[]) => {
+        if(idx === 0) return true;
+        if(idx === events.length - 1) return false;
+        const eventProps = events[idx]._source;
+        const nextEventProps = events[idx + 1]._source;
+        const timeDelta = nextEventProps.timestamp - eventProps.timestamp;
+        return timeDelta >= CONSTANTS.timeThreshold && getDistance(eventProps.map_center, nextEventProps.map_center) < CONSTANTS.maxDistance
+    };
+    const pointGraphics = toPointGraphics(response, filter);
+    const layer = toFeatureLayer(pointGraphics, "Characteristic Points");
+    view.when(() => {
+        var colorParams = {
+            layer,
+            view,
+            basemap: "dark-gray",
+            field: "scale",
+            theme: "high-to-low"
+          };
+          
+        createContinuousRenderer(colorParams)
+        .then(response => {
+            layer.renderer = response.renderer;
+        });
+    });
+    return layer;
 }
 
 const toSessionTracksLayer = (response: ElasticResponse) => {
@@ -71,20 +99,6 @@ const toSessionTracksLayer = (response: ElasticResponse) => {
     const graphicsLayer = new GraphicsLayer({ title: 'Trajectories', id: 'trajectories', visible: false });
     graphicsLayer.addMany(trajectoryGraphics);
     return graphicsLayer;
-}
-
-const toCharacteristicPointsLayer = (response: ElasticResponse, view: MapView) => {
-    const filter = (evt: Event, idx: number, events: Event[]) => {
-        if(idx === 0) return true;
-        if(idx === events.length - 1) return false;
-        const eventProps = events[idx]._source;
-        const nextEventProps = events[idx + 1]._source;
-        const timeDelta = nextEventProps.timestamp - eventProps.timestamp;
-        return timeDelta >= CONSTANTS.timeThreshold && getDistance(eventProps.map_center, nextEventProps.map_center) < CONSTANTS.maxDistance
-    };
-    const pointGraphics = toPointGraphics(response, filter);
-    console.log(pointGraphics.length);
-    return toFeatureLayer(pointGraphics, "Characteristic Points");
 }
 
 function toPointGraphics(response: ElasticResponse, filter?: (evt: Event, idx: number, evts: Event[]) => {}) {
