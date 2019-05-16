@@ -4,6 +4,8 @@ $white: #efefef;
 $black:#242424;
 $orange:#ff642e;
 
+$mapheader: 30px;
+
 html,
 body,
 #app {
@@ -53,6 +55,15 @@ header.top-nav {
   text-transform: uppercase;
 }
 
+/* text */
+.esri-top-label-node>span,
+.esri-handle-label-span,
+.webmap-header {
+  color: $white;
+  font-size: 12px;
+  font-family: "Avenir Next W00", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
 /* map view */
 .main{
   padding: 0;
@@ -71,32 +82,39 @@ header.top-nav {
   background-color: #ff642e
 }
 
-.webmap-left {
+.webmap-header {
+  height: $mapheader;
+  font-size: 20px;
+  text-align: center;
+  vertical-align: middle;
+  background-color: $black;
+}
+
+.webmap-container-left,
+.webmap-container-right {
   padding: 0;
   margin: 5px;
   width: 50%;
-  height: 100%;
+  height: calc(100% - 40px);
+}
+
+.webmap-container-left {
   float: left;
 }
 
+.webmap-container-right {
+  float: right;
+}
+
+.webmap-left,
 .webmap-right {
   padding: 0;
-  margin: 5px;
-  width: 50%;
   height: 100%;
-  float: right;
 }
 
 /* histogram slider */
 .esri-renderer-slider {
   background-color: $black;
-}
-
-.esri-top-label-node>span,
-.esri-handle-label-span {
-  color: $white;
-  font-size: 12px;
-  font-family: "Avenir Next W00", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .main {
