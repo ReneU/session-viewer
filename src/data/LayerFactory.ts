@@ -26,19 +26,19 @@ export default class DataProvider{
         });
     }
 
-    getInteractionPointsLayer(appId: string){
+    createInteractionPointsLayer(appId: string){
         return this[appId].then((response: ElasticResponse) => {
             return toInteractionPointsLayer(response);
         });
     }
 
-    getCharacteristicPointsLayer(appId: string, view: MapView) {
+    createCharacteristicPointsLayer(appId: string, view: MapView) {
         return this[appId].then((response: ElasticResponse) => {
             return toCharacteristicPointsLayer(response, view);
         });
     }
 
-    getSessionTracksLayer(appId: string){
+    createSessionTracksLayer(appId: string){
         return this[appId].then((response: ElasticResponse) => {
             return toSessionTracksLayer(response);
         });

@@ -17,7 +17,7 @@ import EsriMap from "esri/Map";
 
 import { Header } from "./Header";
 import HistogramSlider from "./HistogramSlider";
-import DataProvider from '../data/DataProvider';
+import LayerFactory from '../data/LayerFactory';
 
 export interface AppParams {
   appName: string;
@@ -71,18 +71,18 @@ export default class App extends declared(Widget) {
     viewRight.ui.add(new LayerList({view: viewRight}), "top-right");
     this.synchronizeViews();
 
-    const dataProvider = new DataProvider(params.appIds);
+    const dataProvider = new LayerFactory(params.appIds);
 
-    dataProvider.getSessionTracksLayer(params.appIds[0]).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
-    dataProvider.getCharacteristicPointsLayer(params.appIds[0], viewLeft).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
-    const layerLeftReady = dataProvider.getInteractionPointsLayer(params.appIds[0])
+    dataProvider.createSessionTracksLayer(params.appIds[0]).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
+    dataProvider.createCharacteristicPointsLayer(params.appIds[0], viewLeft).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
+    const layerLeftReady = dataProvider.createInteractionPointsLayer(params.appIds[0])
       .then((layer: FeatureLayer) => {
         this.mapLeft.add(layer);
         this.layerLeft = layer;
       });
-    dataProvider.getSessionTracksLayer(params.appIds[1]).then((layer: GraphicsLayer) => this.mapRight.add(layer));
-    dataProvider.getCharacteristicPointsLayer(params.appIds[1], viewRight).then((layer: GraphicsLayer) => this.mapRight.add(layer));
-    const layerRightReady = dataProvider.getInteractionPointsLayer(params.appIds[1])
+    dataProvider.createSessionTracksLayer(params.appIds[1]).then((layer: GraphicsLayer) => this.mapRight.add(layer));
+    dataProvider.createCharacteristicPointsLayer(params.appIds[1], viewRight).then((layer: GraphicsLayer) => this.mapRight.add(layer));
+    const layerRightReady = dataProvider.createInteractionPointsLayer(params.appIds[1])
       .then((layer: FeatureLayer) => {
         this.mapRight.add(layer);
         this.layerRight = layer;
