@@ -108,11 +108,12 @@ function toPointGraphics(response: ElasticResponse, filter?: (evt: Event, idx: n
         const events = session.events.hits.hits;
         events.forEach((event: Event, i: number) => {
             const eventProps = event._source;
-            const sessionTime = sessionStartDate ? eventProps.timestamp - sessionStartDate : 0;
             if (i === 0) {
                 sessionStartDate = eventProps.timestamp;
             }
             if(!filter || (filter && filter(event, i, events))){
+                const sessionTime = eventProps.timestamp - sessionStartDate;
+                const lastInteractionDelay = !!i ? sessionTime - (events[i - 1]._source.timestamp - sessionStartDate) : 0;
                 tempGraphics.push(new Graphic({
                     attributes: {
                         ObjectID: event._id,
@@ -121,6 +122,7 @@ function toPointGraphics(response: ElasticResponse, filter?: (evt: Event, idx: n
                         topic: eventProps.message,
                         scale: eventProps.map_scale,
                         zoom: eventProps.map_zoom,
+                        lastInteractionDelay,
                         sessionTime
                     },
                     geometry: new Point(eventProps.map_center)
@@ -166,6 +168,11 @@ const toFeatureLayer = (source: Graphic[], title: string, id: string) => {
             new Field ({
                 name: "interactionCount",
                 alias: "InteractionCount",
+                type: "double"
+            }),
+            new Field ({
+                name: "lastInteractionDelay",
+                alias: "LastInteractionDelay",
                 type: "double"
             }),
             new Field ({
