@@ -29,13 +29,14 @@ export default class HistogramSlider extends declared(Accessor) {
   }
 
   private updateHistogram(){
+    const theme = "extremes";
     let colorParams = {
       view: this.view,
       layer: this.layer,
       field: this.field,
       basemap: "dark-gray",
       //maxValue: 50000,
-      theme: "extremes",
+      theme,
       legendOptions: {
         title: "Session Duration"
       }
@@ -62,6 +63,10 @@ export default class HistogramSlider extends declared(Accessor) {
         sliderParams.histogram = histogram;
 
         const colorSlider = new ColorSlider(sliderParams);
+        const label = document.getElementById(this.nodeId + "-header");
+        if(label){
+          label.innerText = this.field + " (" + theme + ")";
+        }
         this.onWidgetReady()
 
         colorSlider.on("data-change", () => {

@@ -134,7 +134,7 @@ export default class App extends declared(Widget) {
     const viewPosition = `bottom-${position}`;
     const slider = new HistogramSlider({layer, field, view, nodeId});
     slider.onWidgetReady = () => {
-      view.ui.add(nodeId, viewPosition);
+      view.ui.add(nodeId + "-container", viewPosition);
     };
     slider.onRendererChange = renderer => {
       layer.renderer = renderer;
