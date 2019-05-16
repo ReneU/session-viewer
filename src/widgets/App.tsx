@@ -140,6 +140,8 @@ export default class App extends declared(Widget) {
     slider.onRendererChange = renderer => {
       layer.renderer = renderer;
     }
+    slider.visible = layer.visible;
+    layer.watch("visible", value => slider.visible = value);
   }
 
   private synchronizeMaps() {

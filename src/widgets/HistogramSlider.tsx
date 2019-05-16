@@ -16,6 +16,16 @@ export default class HistogramSlider extends declared(Accessor) {
   @property() field: string;
   @property() view: MapView;
   @property() nodeId: string;
+  @property()
+  set visible(value: boolean) {
+    const container = document.getElementById(this.nodeId + "-container");
+    if(container) {
+      container.style.visibility = value ? "visible" : "hidden";
+    }
+  }
+  get visible(): boolean {
+    return true;
+  }
   @property() onRendererChange: (renderer: Renderer) => void;
   @property() onWidgetReady: () => void;
 
