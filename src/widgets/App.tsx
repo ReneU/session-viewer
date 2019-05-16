@@ -72,7 +72,6 @@ export default class App extends declared(Widget) {
     });
     viewRight.ui.components = [];
     viewRight.ui.add(new LayerList({view: viewRight}), "top-right");
-    this.synchronizeViews();
 
     const dataProvider = new LayerFactory(params.appIds);
 
@@ -121,7 +120,9 @@ export default class App extends declared(Widget) {
   }
 
   private onViewsReady(){
-    this.initializeHistogramSliders()
+    this.initializeHistogramSliders();
+    this.synchronizeMaps();
+    this.synchronizeViews();
   }
 
   private initializeHistogramSliders() {
@@ -141,8 +142,22 @@ export default class App extends declared(Widget) {
     }
   }
 
+  private synchronizeMaps() {
+    const mapLeft = this.viewLeft.map;
+    const mapRight = this.viewRight.map;
+    this.synchronizeMap(mapLeft, mapRight);
+    this.synchronizeMap(mapRight, mapLeft);
+  }
+
+  private synchronizeMap(source: EsriMap, target: EsriMap) {
+    source.allLayers.forEach(layer => layer.watch("visible", value => {
+      target.allLayers.find(targetLayer => {
+        return targetLayer.id === layer.id;
+      }).visible = value;
+    }))
+  }
+
   private synchronizeViews () {
-    if(!this.viewLeft || !this.viewRight) return;
     this.synchronizeView(this.viewLeft, this.viewRight);
     this.synchronizeView(this.viewRight, this.viewLeft);
   };

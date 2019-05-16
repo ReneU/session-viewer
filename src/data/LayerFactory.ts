@@ -47,7 +47,7 @@ export default class DataProvider{
 
 const toInteractionPointsLayer = (response: ElasticResponse) => {
     const pointGraphics = toPointGraphics(response)
-    return toFeatureLayer(pointGraphics, "Interactions");
+    return toFeatureLayer(pointGraphics, "Interactions", "interaction_points");
 }
 
 const toCharacteristicPointsLayer = (response: ElasticResponse, view: MapView) => {
@@ -60,7 +60,7 @@ const toCharacteristicPointsLayer = (response: ElasticResponse, view: MapView) =
         return timeDelta >= CONSTANTS.timeThreshold && getDistance(eventProps.map_center, nextEventProps.map_center) < CONSTANTS.maxDistance
     };
     const pointGraphics = toPointGraphics(response, filter);
-    const layer = toFeatureLayer(pointGraphics, "Characteristic Points");
+    const layer = toFeatureLayer(pointGraphics, "Characteristic Points", "characteristic_points");
     view.when(() => {
         var colorParams = {
             layer,
@@ -131,11 +131,12 @@ function toPointGraphics(response: ElasticResponse, filter?: (evt: Event, idx: n
     }, []);
 }
 
-const toFeatureLayer = (source: Graphic[], title: string) => {
+const toFeatureLayer = (source: Graphic[], title: string, id: string) => {
     return new FeatureLayer({
         title,
-        visible: false,
         source,
+        id,
+        visible: false,
         fields: [
             new Field({
                 name: "ObjectID",
