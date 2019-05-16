@@ -79,10 +79,11 @@ const toCharacteristicPointsLayer = (response: ElasticResponse, view: MapView) =
         if(idx === events.length - 1) return false;
         const eventProps = events[idx]._source;
         const nextEventProps = events[idx + 1]._source;
-        const timeDelta = getTimeDelta(nextEventProps.timestamp, eventProps.timestamp);
+        const timeDelta = nextEventProps.timestamp - eventProps.timestamp;
         return timeDelta >= CONSTANTS.timeThreshold && getDistance(eventProps.map_center, nextEventProps.map_center) < CONSTANTS.maxDistance
     };
     const pointGraphics = toPointGraphics(response, filter);
+    console.log(pointGraphics.length);
     return toFeatureLayer(pointGraphics, "Characteristic Points");
 }
 
@@ -204,21 +205,10 @@ const toGraphics = (geometry: any) => {
     });
 };
 
-const getFirstAndLastArrayItem = (array: any[]) => {
-    return {
-        first: array[0],
-        last: array[array.length - 1]
-    };
-};
-
-const getDistance = (from, to, esriUnit = 'meters') => {
-    from = new Point(from);
-    to = new Point(to);
-    return geometryEngine.distance(from, to);//, esriUnit);
-};
-
-const getTimeDelta = (first, second) => {
-    return new Date(new Date(first) - new Date(second)).getTime();
+const getDistance = (source: any, destination: any, esriUnit = 'meters') => {
+    source = new Point(source);
+    destination = new Point(destination);
+    return geometryEngine.distance(source, destination, esriUnit);
 };
 
 interface Polyline {
