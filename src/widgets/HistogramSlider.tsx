@@ -9,52 +9,56 @@ import histogram from "esri/renderers/smartMapping/statistics/histogram";
 import ColorSlider from "esri/widgets/ColorSlider";
 
 import InteractionLayer from '../data/InteractionLayer';
+import appConfig from '../appConfig';
 
 @subclass("app.widgets.HistogramSlider")
 export default class HistogramSlider extends declared(Accessor) {
 
-  private layer: InteractionLayer;
+  @property() onWidgetReady: () => void;
+  @property()
+  set visible(visible: boolean) {
+    const container = document.getElementById(this.nodeId + "-container");
+    if(container) {
+      container.style.visibility = visible ? "visible" : "hidden";
+    }
+  }
+  @property()
+  set layer(layer: InteractionLayer) {
+    if(layer.id === this.layer.id) return;
+    this._set("layer", layer);
+    this.updateFieldWatcher(layer);
+    this.render();
+  }
+
   private view: MapView;
   private nodeId: string;
   private slider: ColorSlider;
-  @property()
-  set visible(value: boolean) {
-    const container = document.getElementById(this.nodeId + "-container");
-    if(container) {
-      container.style.visibility = value ? "visible" : "hidden";
-    }
-  }
-  get visible(): boolean {
-    return true;
-  }
-  @property() onWidgetReady: () => void;
+  private fieldWatchHandle: any;
 
   constructor(params: HistogramSliderParams){
     super();
-    this.layer = params.layer;
+    const layer = params.layer;
+    this._set("layer", layer);
     this.view = params.view;
     this.nodeId = params.nodeId;
-    this.updateHistogram();
-    this.layer.watch("rendererField", () => this.updateHistogram());
+    this.render();
+    this.updateFieldWatcher(layer);
   }
 
-  private updateHistogram(){
+  private updateFieldWatcher(layer: InteractionLayer) {
+    if(this.fieldWatchHandle){
+      this.fieldWatchHandle.remove();
+    }
+    this.fieldWatchHandle = this.layer.watch("rendererField", () => this.render());
+  }
+
+  private render(){
+    const basemap = appConfig.basemap;
     const theme = "extremes";
     const view = this.view;
     const layer = this.layer;
     const field = layer.rendererField;
-    let colorParams = {
-      view,
-      layer,
-      field,
-      basemap: "dark-gray",
-      theme
-    };
-
-    let sliderParams: any = {
-      numHandles: 3,
-      syncedHandles: true
-    };
+    let colorParams = { view, theme, layer, field, basemap };
 
     layer
       .when(() => createContinuousRenderer(colorParams))
@@ -110,3 +114,8 @@ interface HistogramSliderParams {
   view: MapView
   nodeId: string,
 }
+
+const sliderParams: any = {
+  numHandles: 3,
+  syncedHandles: true
+};

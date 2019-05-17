@@ -35,13 +35,14 @@ const CSS = {
 
 @subclass("app.widgets.App")
 export default class App extends declared(Widget) {
-  @property() mapLeft: EsriMap;
-  @property() mapRight: EsriMap;
-  @property() viewLeft: MapView;
-  @property() viewRight: MapView;
-  @property() layerLeft: FeatureLayer;
-  @property() layerRight: FeatureLayer;
-  @property() histogramSlider: HistogramSlider;
+  private mapLeft: EsriMap;
+  private mapRight: EsriMap;
+  private viewLeft: MapView;
+  private viewRight: MapView;
+  private layerLeft: FeatureLayer;
+  private layerRight: FeatureLayer;
+  private sliderLeft: HistogramSlider;
+  private sliderRight: HistogramSlider;
 
   constructor(params: AppViewParams) {
     super(params);
@@ -120,8 +121,8 @@ export default class App extends declared(Widget) {
   }
 
   private initializeHistogramSliders() {
-    this.initializeHistogramSlider({layer: this.layerLeft, view: this.viewLeft, position: "left"});
-    this.initializeHistogramSlider({layer: this.layerRight, view: this.viewRight, position: "right"});
+    this.sliderLeft = this.initializeHistogramSlider({layer: this.layerLeft, view: this.viewLeft, position: "left"});
+    this.sliderRight = this.initializeHistogramSlider({layer: this.layerRight, view: this.viewRight, position: "right"});
   }
 
   private initializeHistogramSlider({view, layer, position}: {view: MapView, layer: FeatureLayer, position: string}){
@@ -135,42 +136,53 @@ export default class App extends declared(Widget) {
       layer.renderer = renderer;
     }
     slider.visible = layer.visible;
-    layer.watch("visible", value => slider.visible = value);
+    return slider;
   }
 
   private synchronizeMaps() {
     const mapLeft = this.viewLeft.map;
     const mapRight = this.viewRight.map;
-    this.synchronizeMap(mapLeft, mapRight);
-    this.synchronizeMap(mapRight, mapLeft);
+    this.synchronizeLayers(mapLeft, this.sliderLeft, mapRight);
+    this.synchronizeLayers(mapRight, this.sliderRight, mapLeft);
   }
 
-  private synchronizeMap(source: EsriMap, target: EsriMap) {
-    source.allLayers.forEach(layer => {
+  private synchronizeLayers(sourceMap: EsriMap, sourceSlider: HistogramSlider, targetMap: EsriMap) {
+    sourceMap.allLayers.forEach(layer => {
+      const isInteractionLayer = layer instanceof InteractionLayer;
       // sync visibility of all layers
-      layer.watch("visible", value => {
+      layer.watch("visible", visible => {
         // sync all target layers;
-        target.layers.find(targetLayer => {
+        targetMap.layers.find(targetLayer => {
           return targetLayer.id === layer.id;
-        }).visible = value;
-        // if visible, disable all other layers
-        if(value){
-          source.layers.forEach(targetLayer => {
+        }).visible = visible;
+        // disable all other layers
+        if(visible){
+          sourceMap.layers.forEach(targetLayer => {
             targetLayer.visible = targetLayer.id === layer.id;
           });
         }
+        this.updateSlider(sourceMap, sourceSlider);
       });
 
       // sync rendererField of interaction layers
-      if(layer instanceof InteractionLayer){
+      if(isInteractionLayer){
         layer.watch("rendererField", value => {
-          const interactionLayer = target.layers.find(targetLayer => {
+          const interactionLayer = targetMap.layers.find(targetLayer => {
             return targetLayer.id === layer.id;
           }) as InteractionLayer;
           interactionLayer.rendererField = value;
         })
       }
     });
+  }
+
+  private updateSlider(map: EsriMap, slider: HistogramSlider){
+      const visibleLayer = map.layers.find(layer => layer.visible);
+      if(!visibleLayer) return;
+      const sliderVisibility = visibleLayer instanceof InteractionLayer;
+      slider.visible = sliderVisibility;
+      if(!sliderVisibility) return;
+      slider.layer = visibleLayer as InteractionLayer;
   }
 
   private synchronizeViews () {

@@ -1,9 +1,9 @@
 import Accessor from "esri/core/Accessor";
-
 import { declared, property, subclass } from "esri/core/accessorSupport/decorators";
 import MapView from "esri/views/MapView";
 import LayerList from "esri/widgets/LayerList";
 import ActionToggle = require('esri/support/actions/ActionToggle');
+import InteractionLayer from '../data/InteractionLayer';
 
 @subclass("app.widgets.TableOfContents")
 export default class TableOfContents extends declared(Accessor) {
@@ -24,7 +24,7 @@ export default class TableOfContents extends declared(Accessor) {
       view,
       listItemCreatedFunction: event => {
         const item = event.item;
-        if(item.layer.id === "interaction_points") {
+        if(event.item.layer instanceof InteractionLayer) {
           item.actionsSections = [initialActionSection]
         }
       }
@@ -32,7 +32,7 @@ export default class TableOfContents extends declared(Accessor) {
     layerList.on("trigger-action", (event: any) => {
       const item = event.item;
       const id = event.action.id;
-      if (item.layer.id === "interaction_points") {
+      if (item.layer instanceof InteractionLayer) {
         item.actionsSections.getItemAt(0).forEach((section: ActionToggle) => {
           section.value = section.id === id;
         });
