@@ -11,12 +11,12 @@ import GraphicsLayer from "esri/layers/GraphicsLayer";
 import FeatureLayer from "esri/layers/FeatureLayer";
 import MapView from "esri/views/MapView";
 import Widget from "esri/widgets/Widget";
-import LayerList from "esri/widgets/LayerList";
 import Extent from "esri/geometry/Extent";
 import EsriMap from "esri/Map";
 
 import { Header } from "./Header";
 import HistogramSlider from "./HistogramSlider";
+import TableOfContents from './TableOfContents';
 import LayerFactory from '../data/LayerFactory';
 
 export interface AppParams {
@@ -62,7 +62,8 @@ export default class App extends declared(Widget) {
       }
     });
     viewLeft.ui.components = [];
-    viewLeft.ui.add(new LayerList({view: viewLeft}), "top-left");
+    const tableOfContents = new TableOfContents({view: viewLeft});
+    viewLeft.ui.add(tableOfContents.getWidget(), "top-left");
     const viewRight = this.viewRight = new MapView({
       extent: params.initialExtent,
       map: this.mapRight,
@@ -71,7 +72,6 @@ export default class App extends declared(Widget) {
       }
     });
     viewRight.ui.components = [];
-    viewRight.ui.add(new LayerList({view: viewRight}), "top-right");
 
     const dataProvider = new LayerFactory(params.appIds);
 
