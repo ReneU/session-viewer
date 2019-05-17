@@ -54,7 +54,8 @@
     ]
   },
   "dependencies": {
-    "@arcgis/webpack-plugin": "~4.11.0"
+    "@arcgis/webpack-plugin": "~4.11.0",
+    "@types/dojo": "^1.9.41"
   },
   "arcgis": {
     "type": "jsapi"

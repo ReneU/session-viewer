@@ -3,6 +3,7 @@ import Accessor from "esri/core/Accessor";
 import { declared, property, subclass } from "esri/core/accessorSupport/decorators";
 import MapView from "esri/views/MapView";
 import LayerList from "esri/widgets/LayerList";
+import ActionToggle = require('esri/support/actions/ActionToggle');
 
 @subclass("app.widgets.TableOfContents")
 export default class TableOfContents extends declared(Accessor) {
@@ -45,8 +46,8 @@ export default class TableOfContents extends declared(Accessor) {
       const item = event.item;
       const id = event.action.id;
       if (item.layer.id === "interaction_points") {
-        item.actionsSections.getItemAt(0).forEach(section => {
-          section.value = section.id === id;
+        item.actionsSections.getItemAt(0).forEach((section: ActionToggle) => {
+          section.disabled = section.id !== id;
         });
         item.layer.rendererField = id;
       }
