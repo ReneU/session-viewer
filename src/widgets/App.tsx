@@ -1,4 +1,6 @@
 import esri = __esri;
+import config from "../appConfig";
+
 
 import {
   declared,
@@ -11,7 +13,6 @@ import GraphicsLayer from "esri/layers/GraphicsLayer";
 import FeatureLayer from "esri/layers/FeatureLayer";
 import MapView from "esri/views/MapView";
 import Widget from "esri/widgets/Widget";
-import Extent from "esri/geometry/Extent";
 import EsriMap from "esri/Map";
 
 import { Header } from "./Header";
@@ -20,14 +21,7 @@ import TableOfContents from './TableOfContents';
 import LayerFactory from '../data/LayerFactory';
 import InteractionLayer from '../data/InteractionLayer';
 
-export interface AppParams {
-  appName: string;
-  basemap: string;
-  initialExtent: Extent;
-  appIds: string[];
-}
-
-interface AppViewParams extends AppParams, esri.WidgetProperties {}
+interface AppViewParams extends esri.WidgetProperties {}
 
 const CSS = {
   base: "main",
@@ -41,8 +35,6 @@ const CSS = {
 
 @subclass("app.widgets.App")
 export default class App extends declared(Widget) {
-  @property() appName: string;
-  @property() initialExtent: Extent;
   @property() mapLeft: EsriMap;
   @property() mapRight: EsriMap;
   @property() viewLeft: MapView;
@@ -53,10 +45,11 @@ export default class App extends declared(Widget) {
 
   constructor(params: AppViewParams) {
     super(params);
-    this.mapLeft = new EsriMap({basemap: params.basemap});
-    this.mapRight = new EsriMap({basemap: params.basemap});
+    const appIds = config.appIds;
+    this.mapLeft = new EsriMap({basemap: config.basemap});
+    this.mapRight = new EsriMap({basemap: config.basemap});
     const viewLeft = this.viewLeft = new MapView({
-      extent: params.initialExtent,
+      extent: config.initialExtent,
       map: this.mapLeft,
       constraints: {
         rotationEnabled: false
@@ -66,7 +59,7 @@ export default class App extends declared(Widget) {
     const tableOfContents = new TableOfContents({view: viewLeft});
     viewLeft.ui.add(tableOfContents.getWidget(), "top-left");
     const viewRight = this.viewRight = new MapView({
-      extent: params.initialExtent,
+      extent: config.initialExtent,
       map: this.mapRight,
       constraints: {
         rotationEnabled: false
@@ -74,18 +67,18 @@ export default class App extends declared(Widget) {
     });
     viewRight.ui.components = [];
 
-    const dataProvider = new LayerFactory(params.appIds);
+    const dataProvider = new LayerFactory(appIds);
 
-    dataProvider.createSessionTracksLayer(params.appIds[0]).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
-    dataProvider.createCharacteristicPointsLayer(params.appIds[0], viewLeft).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
-    const layerLeftReady = dataProvider.createInteractionPointsLayer(params.appIds[0])
+    dataProvider.createSessionTracksLayer(appIds[0]).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
+    dataProvider.createCharacteristicPointsLayer(appIds[0], viewLeft).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
+    const layerLeftReady = dataProvider.createInteractionPointsLayer(appIds[0])
       .then((layer: FeatureLayer) => {
         this.mapLeft.add(layer);
         this.layerLeft = layer;
       });
-    dataProvider.createSessionTracksLayer(params.appIds[1]).then((layer: GraphicsLayer) => this.mapRight.add(layer));
-    dataProvider.createCharacteristicPointsLayer(params.appIds[1], viewRight).then((layer: GraphicsLayer) => this.mapRight.add(layer));
-    const layerRightReady = dataProvider.createInteractionPointsLayer(params.appIds[1])
+    dataProvider.createSessionTracksLayer(appIds[1]).then((layer: GraphicsLayer) => this.mapRight.add(layer));
+    dataProvider.createCharacteristicPointsLayer(appIds[1], viewRight).then((layer: GraphicsLayer) => this.mapRight.add(layer));
+    const layerRightReady = dataProvider.createInteractionPointsLayer(appIds[1])
       .then((layer: FeatureLayer) => {
         this.mapRight.add(layer);
         this.layerRight = layer;
@@ -97,14 +90,14 @@ export default class App extends declared(Widget) {
   render() {
     return (
       <div class={CSS.base}>
-        {Header({ appName: this.appName })}
+        {Header({ appName: config.appName })}
         <div class={CSS.container}>
           <div class={CSS.containerLeft}>
-            <div class={CSS.webmapHeader}>{"Scenario A"}</div>
+            <div class={CSS.webmapHeader}>{config.scenarioA}</div>
             <div class={CSS.webmapLeft} bind={this} afterCreate={this.onLeftReady} />
           </div>
           <div class={CSS.containerRight}>
-            <div class={CSS.webmapHeader}>{"Scenario B"}</div>
+            <div class={CSS.webmapHeader}>{config.scenarioB}</div>
             <div class={CSS.webmapRight} bind={this} afterCreate={this.onRightReady} />
           </div>
         </div>

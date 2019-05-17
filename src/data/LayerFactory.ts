@@ -1,5 +1,6 @@
 import ElasticsearchStore from './ElasticsearchStore';
 import {ElasticResponse, Session, Event} from "./DataInterfaces";
+import config from "../appConfig";
 
 import {createContinuousRenderer} from "esri/renderers/smartMapping/creators/color";
 import SpatialReference from 'esri/geometry/SpatialReference';
@@ -56,13 +57,14 @@ const toCharacteristicPointsLayer = (response: ElasticResponse, view: MapView) =
         const timeDelta = nextEventProps.timestamp - eventProps.timestamp;
         return timeDelta >= CONSTANTS.timeThreshold && getDistance(eventProps.map_center, nextEventProps.map_center) < CONSTANTS.maxDistance
     };
+    const {title, id} = config.characteristicsLayer;
     const pointGraphics = toPointGraphics(response, filter);
-    const layer = toFeatureLayer(pointGraphics, "Characteristic Points", "characteristic_points");
+    const layer = toFeatureLayer(pointGraphics, title, id);
     view.when(() => {
         var colorParams = {
             layer,
             view,
-            basemap: "dark-gray",
+            basemap: config.basemap,
             field: "scale",
             theme: "high-to-low"
           };
@@ -92,8 +94,9 @@ const toSessionTracksLayer = (response: ElasticResponse) => {
         });
         trajectories.push(track);
     });
+    const {title, id} = config.trajectoriesLayer;
     const trajectoryGraphics = toGraphics(trajectories);
-    const graphicsLayer = new GraphicsLayer({ title: 'Trajectories', id: 'trajectories', visible: false });
+    const graphicsLayer = new GraphicsLayer({ title, id, visible: false });
     graphicsLayer.addMany(trajectoryGraphics);
     return graphicsLayer;
 }

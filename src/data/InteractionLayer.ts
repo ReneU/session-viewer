@@ -3,6 +3,7 @@ import {
     property,
     subclass
   } from "esri/core/accessorSupport/decorators";
+  import config from "../appConfig";
   
   import Collection from "esri/core/Collection";
   import Graphic from "esri/Graphic";
@@ -19,8 +20,8 @@ import {
         const source = new Collection();
         source.addMany(graphics)
         return {
-            title: "Interactions",
-            id: "interaction_points",
+            title: config.interactionLayer.title,
+            id: config.interactionLayer.id,
             visible: false,
             source,
             fields: [
