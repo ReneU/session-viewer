@@ -47,7 +47,7 @@ export default class TableOfContents extends declared(Accessor) {
       const id = event.action.id;
       if (item.layer.id === "interaction_points") {
         item.actionsSections.getItemAt(0).forEach((section: ActionToggle) => {
-          section.disabled = section.id !== id;
+          section.value = section.id === id;
         });
         item.layer.rendererField = id;
       }
