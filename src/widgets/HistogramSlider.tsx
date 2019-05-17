@@ -7,7 +7,6 @@ import MapView from "esri/views/MapView";
 import {createContinuousRenderer} from "esri/renderers/smartMapping/creators/color";
 import histogram from "esri/renderers/smartMapping/statistics/histogram";
 import ColorSlider from "esri/widgets/ColorSlider";
-import { Renderer } from 'esri/renderers';
 
 import InteractionLayer from '../data/InteractionLayer';
 
