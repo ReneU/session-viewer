@@ -28,7 +28,6 @@ export default class HistogramSlider extends declared(Accessor) {
   get visible(): boolean {
     return true;
   }
-  @property() onRendererChange: (renderer: Renderer) => void;
   @property() onWidgetReady: () => void;
 
   constructor(params: HistogramSliderParams){
@@ -58,10 +57,10 @@ export default class HistogramSlider extends declared(Accessor) {
       syncedHandles: true
     };
 
-    this.layer
+    layer
       .when(() => createContinuousRenderer(colorParams))
       .then(response => {
-        this.onRendererChange(response.renderer);
+        layer.renderer = response.renderer;
         sliderParams.statistics = response.statistics;
         sliderParams.visualVariable = response.visualVariable;
 
@@ -79,12 +78,13 @@ export default class HistogramSlider extends declared(Accessor) {
 
   private updateSlider(sliderParams: any, theme: string){
     const layer = this.layer;
+    const nodeId = this.nodeId;
     this.destroySlider();
-    const container = d_construct.create("div", { id: this.nodeId });
-    d_construct.place(container, `${this.nodeId}-container`);
+    const container = d_construct.create("div", { id: nodeId });
+    d_construct.place(container, `${nodeId}-container`);
     sliderParams.container = container;
     const slider = this.slider = new ColorSlider(sliderParams);
-    const label = document.getElementById(`${this.nodeId}-header`);
+    const label = document.getElementById(`${nodeId}-header`);
     if(label){
       label.innerText = layer.rendererField + " (" + theme + ")";
     }
@@ -94,7 +94,7 @@ export default class HistogramSlider extends declared(Accessor) {
       const visualVariable = clone(slider.visualVariable)
       const renderer = clone(layer.renderer);
       renderer.visualVariables = [visualVariable];
-      this.onRendererChange(renderer);
+      layer.renderer = renderer;
     });
   }
 
