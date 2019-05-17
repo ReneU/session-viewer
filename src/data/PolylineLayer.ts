@@ -11,7 +11,7 @@ import {
   @subclass()
   export default class PoylineLayer extends declared(GeometryLayer) {
   
-    rendererField = "zoom";
+    rendererField = "zoomDiff";
     static fields = [
         new Field({
             name: "ObjectID",
