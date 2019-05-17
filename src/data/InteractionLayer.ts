@@ -3,7 +3,6 @@ import {
     property,
     subclass
   } from "esri/core/accessorSupport/decorators";
-  import config from "../appConfig";
   
   import Collection from "esri/core/Collection";
   import Graphic from "esri/Graphic";
@@ -16,14 +15,14 @@ import {
     @property()
     rendererField: string = "zoom";
   
-    static getConstructorProperties (graphics: Graphic[]) {
+    static getConstructorProperties (graphics: Graphic[], id: string, title: string) {
         const source = new Collection();
         source.addMany(graphics)
         return {
-            title: config.interactionLayer.title,
-            id: config.interactionLayer.id,
-            visible: false,
+            id,
+            title,
             source,
+            visible: false,
             fields: [
                 new Field({
                     name: "ObjectID",

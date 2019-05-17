@@ -2,13 +2,9 @@ import ElasticsearchStore from './ElasticsearchStore';
 import {ElasticResponse, Session, Event} from "./DataInterfaces";
 import config from "../appConfig";
 
-import {createContinuousRenderer} from "esri/renderers/smartMapping/creators/color";
 import SpatialReference from 'esri/geometry/SpatialReference';
 import geometryEngine from "esri/geometry/geometryEngine";
 import GraphicsLayer from 'esri/layers/GraphicsLayer';
-import FeatureLayer from 'esri/layers/FeatureLayer';
-import Field from 'esri/layers/support/Field';
-import MapView from 'esri/views/MapView';
 import { Point } from 'esri/geometry';
 import Graphic from "esri/Graphic";
 import InteractionLayer from './InteractionLayer';
@@ -30,14 +26,25 @@ export default class DataProvider{
 
     createInteractionPointsLayer(appId: string){
         return this[appId].then((response: ElasticResponse) => {
-            const pointsGraphics = toPointGraphics(response);
-            return new InteractionLayer(InteractionLayer.getConstructorProperties(pointsGraphics));
+            const {title, id} = config.interactionLayer;
+            const pointGraphics = toPointGraphics(response);
+            return new InteractionLayer(InteractionLayer.getConstructorProperties(pointGraphics, id, title));
         });
     }
 
-    createCharacteristicPointsLayer(appId: string, view: MapView) {
+    createCharacteristicPointsLayer(appId: string) {
         return this[appId].then((response: ElasticResponse) => {
-            return toCharacteristicPointsLayer(response, view);
+            const filter = (evt: Event, idx: number, events: Event[]) => {
+                if(idx === 0) return true;
+                if(idx === events.length - 1) return false;
+                const eventProps = evt._source;
+                const nextEventProps = events[idx + 1]._source;
+                const timeDelta = nextEventProps.timestamp - eventProps.timestamp;
+                return timeDelta >= CONSTANTS.timeThreshold && getDistance(eventProps.map_center, nextEventProps.map_center) < CONSTANTS.maxDistance
+            };
+            const {title, id} = config.characteristicsLayer;
+            const pointGraphics = toPointGraphics(response, filter);
+            return new InteractionLayer(InteractionLayer.getConstructorProperties(pointGraphics, id ,title));
         });
     }
 
@@ -46,35 +53,6 @@ export default class DataProvider{
             return toSessionTracksLayer(response);
         });
     }
-}
-
-const toCharacteristicPointsLayer = (response: ElasticResponse, view: MapView) => {
-    const filter = (evt: Event, idx: number, events: Event[]) => {
-        if(idx === 0) return true;
-        if(idx === events.length - 1) return false;
-        const eventProps = evt._source;
-        const nextEventProps = events[idx + 1]._source;
-        const timeDelta = nextEventProps.timestamp - eventProps.timestamp;
-        return timeDelta >= CONSTANTS.timeThreshold && getDistance(eventProps.map_center, nextEventProps.map_center) < CONSTANTS.maxDistance
-    };
-    const {title, id} = config.characteristicsLayer;
-    const pointGraphics = toPointGraphics(response, filter);
-    const layer = toFeatureLayer(pointGraphics, title, id);
-    view.when(() => {
-        var colorParams = {
-            layer,
-            view,
-            basemap: config.basemap,
-            field: "scale",
-            theme: "high-to-low"
-          };
-          
-        createContinuousRenderer(colorParams)
-        .then(response => {
-            layer.renderer = response.renderer;
-        });
-    });
-    return layer;
 }
 
 const toSessionTracksLayer = (response: ElasticResponse) => {
@@ -132,58 +110,6 @@ function toPointGraphics(response: ElasticResponse, filter?: (evt: Event, idx: n
         return tempGraphics;
     }, []);
 }
-
-const toFeatureLayer = (source: Graphic[], title: string, id: string) => {
-    return new FeatureLayer({
-        title,
-        source,
-        id,
-        visible: false,
-        fields: [
-            new Field({
-                name: "ObjectID",
-                alias: "ObjectID",
-                type: "oid"
-            }),
-            new Field({
-                name: "sessionId",
-                alias: "SessionID",
-                type: "string"
-            }),
-            new Field ({
-                name: "topic",
-                alias: "Topic",
-                type: "string"
-            }),
-            new Field ({
-                name: "scale",
-                alias: "Scale",
-                type: "double"
-            }),
-            new Field ({
-                name: "zoom",
-                alias: "Zoom",
-                type: "double"
-            }),
-            new Field ({
-                name: "interactionCount",
-                alias: "InteractionCount",
-                type: "double"
-            }),
-            new Field ({
-                name: "lastInteractionDelay",
-                alias: "LastInteractionDelay",
-                type: "double"
-            }),
-            new Field ({
-                name: "sessionTime",
-                alias: "SessionTime",
-                type: "double"
-            })
-        ]
-    });
-}
-
 
 const getSymbolFromGeometry = (feature: any) => {
     const width = 2;
