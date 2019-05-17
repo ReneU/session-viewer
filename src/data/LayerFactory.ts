@@ -1,13 +1,12 @@
-import ElasticsearchStore from './ElasticsearchStore';
 import {ElasticResponse, Session, Event} from "./DataInterfaces";
+import ElasticsearchStore from './ElasticsearchStore';
+import InteractionLayer from './InteractionLayer';
 import config from "../appConfig";
 
 import SpatialReference from 'esri/geometry/SpatialReference';
 import geometryEngine from "esri/geometry/geometryEngine";
-import GraphicsLayer from 'esri/layers/GraphicsLayer';
 import { Point } from 'esri/geometry';
 import Graphic from "esri/Graphic";
-import InteractionLayer from './InteractionLayer';
 
 const CONSTANTS = {
     minRadius: 50,
@@ -28,7 +27,7 @@ export default class DataProvider{
         return this[appId].then((response: ElasticResponse) => {
             const {title, id} = config.interactionLayer;
             const pointGraphics = toPointGraphics(response);
-            return new InteractionLayer(InteractionLayer.getConstructorProperties(pointGraphics, id, title));
+            return new InteractionLayer(InteractionLayer.getPointConstructorProps(pointGraphics, id, title));
         });
     }
 
@@ -44,39 +43,37 @@ export default class DataProvider{
             };
             const {title, id} = config.characteristicsLayer;
             const pointGraphics = toPointGraphics(response, filter);
-            return new InteractionLayer(InteractionLayer.getConstructorProperties(pointGraphics, id ,title));
+            return new InteractionLayer(InteractionLayer.getPointConstructorProps(pointGraphics, id ,title));
         });
     }
 
     createSessionTracksLayer(appId: string){
         return this[appId].then((response: ElasticResponse) => {
-            return toSessionTracksLayer(response);
+            return toPolylineGraphics(response);
         });
     }
 }
 
-const toSessionTracksLayer = (response: ElasticResponse) => {
+const toPolylineGraphics = (response: ElasticResponse) => {
     let trajectories: Polyline[] = [];
     response.sessions.buckets.forEach(session => {
         const events = session.events.hits.hits;
-        const track: Polyline = {
-            type: 'polyline',
-            paths: []
-        }
-        events.forEach((event: Event) => {
+        events.forEach((event: Event, idx: number) => {
+            if (idx === 0) return;
             const eventProps = event._source;
-            if (!track.spatialReference) {
-                track.spatialReference = new SpatialReference({ wkid: eventProps.map_center.spatialReference.wkid })
-            }
-            track.paths.push([eventProps.map_center.x, eventProps.map_center.y]);
+            const prevEventProps = events[idx - 1]._source;
+            const source = [prevEventProps.map_center.x, prevEventProps.map_center.y];
+            const destination = [eventProps.map_center.x, eventProps.map_center.y];
+            trajectories.push({
+                type: 'polyline',
+                paths: [source, destination],
+                spatialReference: new SpatialReference({ wkid: eventProps.map_center.spatialReference.wkid })
+            });
         });
-        trajectories.push(track);
     });
     const {title, id} = config.trajectoriesLayer;
-    const trajectoryGraphics = toGraphics(trajectories);
-    const graphicsLayer = new GraphicsLayer({ title, id, visible: false });
-    graphicsLayer.addMany(trajectoryGraphics);
-    return graphicsLayer;
+    const polylineGraphics = toGraphics(trajectories);
+    return new InteractionLayer(InteractionLayer.getPointConstructorProps(polylineGraphics, id ,title));
 }
 
 function toPointGraphics(response: ElasticResponse, filter?: (evt: Event, idx: number, evts: Event[]) => {}) {

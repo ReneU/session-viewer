@@ -4,10 +4,10 @@ import {
     subclass
   } from "esri/core/accessorSupport/decorators";
   
-  import Collection from "esri/core/Collection";
-  import Graphic from "esri/Graphic";
   import FeatureLayer from "esri/layers/FeatureLayer";
+  import Collection from "esri/core/Collection";
   import Field from "esri/layers/support/Field";
+  import Graphic from "esri/Graphic";
   
   @subclass()
   export default class InteractionLayer extends declared(FeatureLayer) {
@@ -15,7 +15,7 @@ import {
     @property()
     rendererField: string = "zoom";
   
-    static getConstructorProperties (graphics: Graphic[], id: string, title: string) {
+    static getPointConstructorProps (graphics: Graphic[], id: string, title: string) {
         const source = new Collection();
         source.addMany(graphics)
         return {
@@ -65,8 +65,7 @@ import {
                     type: "double"
                 })
             ],
-            objectIdField: "ObjectID",
-            geometryType: "point"
+            objectIdField: "ObjectID"
         }
     }
 }
