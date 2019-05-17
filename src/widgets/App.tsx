@@ -4,7 +4,6 @@ import config from "../appConfig";
 
 import {
   declared,
-  property,
   subclass
 } from "esri/core/accessorSupport/decorators";
 import { tsx } from "esri/widgets/support/widget";
@@ -19,7 +18,7 @@ import { Header } from "./Header";
 import HistogramSlider from "./HistogramSlider";
 import TableOfContents from './TableOfContents';
 import LayerFactory from '../data/LayerFactory';
-import InteractionLayer from '../data/InteractionLayer';
+import GeometryLayer from '../data/GeometryLayer';
 
 interface AppViewParams extends esri.WidgetProperties {}
 
@@ -148,7 +147,6 @@ export default class App extends declared(Widget) {
 
   private synchronizeLayers(sourceMap: EsriMap, sourceSlider: HistogramSlider, targetMap: EsriMap) {
     sourceMap.allLayers.forEach(layer => {
-      const isInteractionLayer = layer instanceof InteractionLayer;
       // sync visibility of all layers
       layer.watch("visible", visible => {
         // sync all target layers;
@@ -165,24 +163,20 @@ export default class App extends declared(Widget) {
       });
 
       // sync rendererField of interaction layers
-      if(isInteractionLayer){
-        layer.watch("rendererField", value => {
-          const interactionLayer = targetMap.layers.find(targetLayer => {
-            return targetLayer.id === layer.id;
-          }) as InteractionLayer;
-          interactionLayer.rendererField = value;
-        })
-      }
+      layer.watch("rendererField", value => {
+        const interactionLayer = targetMap.layers.find(targetLayer => {
+          return targetLayer.id === layer.id;
+        }) as GeometryLayer;
+        interactionLayer.rendererField = value;
+      })
     });
   }
 
   private updateSlider(map: EsriMap, slider: HistogramSlider){
       const visibleLayer = map.layers.find(layer => layer.visible);
       if(!visibleLayer) return;
-      const sliderVisibility = visibleLayer instanceof InteractionLayer;
-      slider.visible = sliderVisibility;
-      if(!sliderVisibility) return;
-      slider.layer = visibleLayer as InteractionLayer;
+      slider.visible = true;
+      slider.layer = visibleLayer as GeometryLayer;
   }
 
   private synchronizeViews () {

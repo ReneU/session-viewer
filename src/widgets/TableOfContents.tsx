@@ -3,7 +3,7 @@ import { declared, property, subclass } from "esri/core/accessorSupport/decorato
 import MapView from "esri/views/MapView";
 import LayerList from "esri/widgets/LayerList";
 import ActionToggle = require('esri/support/actions/ActionToggle');
-import InteractionLayer from '../data/InteractionLayer';
+import GeometryLayer from '../data/GeometryLayer';
 
 @subclass("app.widgets.TableOfContents")
 export default class TableOfContents extends declared(Accessor) {
@@ -24,15 +24,14 @@ export default class TableOfContents extends declared(Accessor) {
       view,
       listItemCreatedFunction: event => {
         const item = event.item;
-        if(event.item.layer instanceof InteractionLayer) {
-          item.actionsSections = [initialActionSection]
-        }
+        const layer = item.layer as GeometryLayer;
+        item.actionsSections = [layer.actions]
       }
     });
     layerList.on("trigger-action", (event: any) => {
       const item = event.item;
       const id = event.action.id;
-      if (item.layer instanceof InteractionLayer) {
+      if (item.layer instanceof GeometryLayer) {
         item.actionsSections.getItemAt(0).forEach((section: ActionToggle) => {
           section.value = section.id === id;
         });
@@ -46,36 +45,3 @@ export default class TableOfContents extends declared(Accessor) {
 interface TableOfContentsParams {
   view: MapView
 }
-
-const initialActionSection = [
-  {
-    title: "Zoom Factor",
-    type: "toggle",
-    value: true,
-    id: "zoom"
-  },
-  {
-    title: "Scale",
-    type: "toggle",
-    value: false,
-    id: "scale"
-  },
-  {
-    title: "Interaction Count",
-    type: "toggle",
-    value: false,
-    id: "interactionCount"
-  },
-  {
-    title: "Time since Session-Start",
-    type: "toggle",
-    value: false,
-    id: "sessionTime"
-  },
-  {
-    title: "Time Since Last Interaction",
-    type: "toggle",
-    value: false,
-    id: "lastInteractionDelay"
-  }
-];

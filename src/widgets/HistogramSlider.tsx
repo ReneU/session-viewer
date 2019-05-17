@@ -8,7 +8,7 @@ import {createContinuousRenderer} from "esri/renderers/smartMapping/creators/col
 import histogram from "esri/renderers/smartMapping/statistics/histogram";
 import ColorSlider from "esri/widgets/ColorSlider";
 
-import InteractionLayer from '../data/InteractionLayer';
+import GeometryLayer from '../data/GeometryLayer';
 import appConfig from '../appConfig';
 
 @subclass("app.widgets.HistogramSlider")
@@ -23,7 +23,7 @@ export default class HistogramSlider extends declared(Accessor) {
     }
   }
   @property()
-  set layer(layer: InteractionLayer) {
+  set layer(layer: GeometryLayer) {
     if(layer.id === this.layer.id) return;
     this._set("layer", layer);
     this.updateFieldWatcher(layer);
@@ -45,7 +45,7 @@ export default class HistogramSlider extends declared(Accessor) {
     this.updateFieldWatcher(layer);
   }
 
-  private updateFieldWatcher(layer: InteractionLayer) {
+  private updateFieldWatcher(layer: GeometryLayer) {
     if(this.fieldWatchHandle){
       this.fieldWatchHandle.remove();
     }
@@ -110,7 +110,7 @@ export default class HistogramSlider extends declared(Accessor) {
 }
 
 interface HistogramSliderParams {
-  layer: InteractionLayer,
+  layer: GeometryLayer,
   view: MapView
   nodeId: string,
 }
