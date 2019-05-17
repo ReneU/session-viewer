@@ -147,14 +147,24 @@ export default class App extends declared(Widget) {
 
   private synchronizeMap(source: EsriMap, target: EsriMap) {
     source.allLayers.forEach(layer => {
+      // sync visibility of all layers
       layer.watch("visible", value => {
-        target.allLayers.find(targetLayer => {
+        // sync all target layers;
+        target.layers.find(targetLayer => {
           return targetLayer.id === layer.id;
         }).visible = value;
-      })
+        // if visible, disable all other layers
+        if(value){
+          source.layers.forEach(targetLayer => {
+            targetLayer.visible = targetLayer.id === layer.id;
+          });
+        }
+      });
+
+      // sync rendererField of interaction layers
       if(layer instanceof InteractionLayer){
         layer.watch("rendererField", value => {
-          const interactionLayer = target.allLayers.find(targetLayer => {
+          const interactionLayer = target.layers.find(targetLayer => {
             return targetLayer.id === layer.id;
           }) as InteractionLayer;
           interactionLayer.rendererField = value;
