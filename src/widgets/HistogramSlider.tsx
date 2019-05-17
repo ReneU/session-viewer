@@ -50,11 +50,7 @@ export default class HistogramSlider extends declared(Accessor) {
       layer,
       field,
       basemap: "dark-gray",
-      maxValue: 50000,
-      theme,
-      legendOptions: {
-        title: "Session Duration"
-      }
+      theme
     };
 
     let sliderParams: any = {

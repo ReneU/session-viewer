@@ -51,7 +51,7 @@ const toCharacteristicPointsLayer = (response: ElasticResponse, view: MapView) =
     const filter = (evt: Event, idx: number, events: Event[]) => {
         if(idx === 0) return true;
         if(idx === events.length - 1) return false;
-        const eventProps = events[idx]._source;
+        const eventProps = evt._source;
         const nextEventProps = events[idx + 1]._source;
         const timeDelta = nextEventProps.timestamp - eventProps.timestamp;
         return timeDelta >= CONSTANTS.timeThreshold && getDistance(eventProps.map_center, nextEventProps.map_center) < CONSTANTS.maxDistance
@@ -120,7 +120,7 @@ function toPointGraphics(response: ElasticResponse, filter?: (evt: Event, idx: n
                         scale: eventProps.map_scale,
                         zoom: eventProps.map_zoom,
                         lastInteractionDelay,
-                        sessionTime
+                        sessionTime: sessionTime / 1000
                     },
                     geometry: new Point(eventProps.map_center)
                 }));
