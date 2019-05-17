@@ -35,7 +35,7 @@ export default class TableOfContents extends declared(Accessor) {
               title: "Time since Session-Start",
               type: "toggle",
               value: false,
-              id: "timeSinceSessionStart"
+              id: "sessionTime"
             }
           ]]
         }
@@ -48,7 +48,7 @@ export default class TableOfContents extends declared(Accessor) {
         item.actionsSections.getItemAt(0).forEach(section => {
           section.value = section.id === id;
         });
-        // do something
+        item.layer.rendererField = id;
       }
     });
     this.widget = layerList;

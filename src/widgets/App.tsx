@@ -18,6 +18,7 @@ import { Header } from "./Header";
 import HistogramSlider from "./HistogramSlider";
 import TableOfContents from './TableOfContents';
 import LayerFactory from '../data/LayerFactory';
+import InteractionLayer from '../data/InteractionLayer';
 
 export interface AppParams {
   appName: string;
@@ -126,14 +127,14 @@ export default class App extends declared(Widget) {
   }
 
   private initializeHistogramSliders() {
-    this.initializeHistogramSlider({layer: this.layerLeft, field: "sessionTime", view: this.viewLeft, position: "left"});
-    this.initializeHistogramSlider({layer: this.layerRight, field: "sessionTime", view: this.viewRight, position: "right"});
+    this.initializeHistogramSlider({layer: this.layerLeft, view: this.viewLeft, position: "left"});
+    this.initializeHistogramSlider({layer: this.layerRight, view: this.viewRight, position: "right"});
   }
 
-  private initializeHistogramSlider({view, layer, field, position}: {view: MapView, layer: FeatureLayer, field: string, position: string}){
+  private initializeHistogramSlider({view, layer, position}: {view: MapView, layer: FeatureLayer, position: string}){
     const nodeId = `slider-${position}`;
     const viewPosition = `bottom-${position}`;
-    const slider = new HistogramSlider({layer, field, view, nodeId});
+    const slider = new HistogramSlider({layer, view, nodeId});
     slider.onWidgetReady = () => {
       view.ui.add(nodeId + "-container", viewPosition);
     };
@@ -152,11 +153,21 @@ export default class App extends declared(Widget) {
   }
 
   private synchronizeMap(source: EsriMap, target: EsriMap) {
-    source.allLayers.forEach(layer => layer.watch("visible", value => {
-      target.allLayers.find(targetLayer => {
-        return targetLayer.id === layer.id;
-      }).visible = value;
-    }))
+    source.allLayers.forEach(layer => {
+      layer.watch("visible", value => {
+        target.allLayers.find(targetLayer => {
+          return targetLayer.id === layer.id;
+        }).visible = value;
+      })
+      if(layer instanceof InteractionLayer){
+        layer.watch("rendererField", value => {
+          const interactionLayer = target.allLayers.find(targetLayer => {
+            return targetLayer.id === layer.id;
+          }) as InteractionLayer;
+          interactionLayer.rendererField = value;
+        })
+      }
+    });
   }
 
   private synchronizeViews () {

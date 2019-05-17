@@ -10,6 +10,7 @@ import Field from 'esri/layers/support/Field';
 import MapView from 'esri/views/MapView';
 import { Point } from 'esri/geometry';
 import Graphic from "esri/Graphic";
+import InteractionLayer from './InteractionLayer';
 
 const CONSTANTS = {
     minRadius: 50,
@@ -28,7 +29,8 @@ export default class DataProvider{
 
     createInteractionPointsLayer(appId: string){
         return this[appId].then((response: ElasticResponse) => {
-            return toInteractionPointsLayer(response);
+            const pointsGraphics = toPointGraphics(response);
+            return new InteractionLayer(InteractionLayer.getConstructorProperties(pointsGraphics));
         });
     }
 
@@ -43,11 +45,6 @@ export default class DataProvider{
             return toSessionTracksLayer(response);
         });
     }
-}
-
-const toInteractionPointsLayer = (response: ElasticResponse) => {
-    const pointGraphics = toPointGraphics(response)
-    return toFeatureLayer(pointGraphics, "Interactions", "interaction_points");
 }
 
 const toCharacteristicPointsLayer = (response: ElasticResponse, view: MapView) => {
