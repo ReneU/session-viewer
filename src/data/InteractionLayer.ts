@@ -13,7 +13,7 @@ import {
   export default class InteractionLayer extends declared(FeatureLayer) {
   
     @property()
-    rendererField: string = "scale";
+    rendererField: string = "zoom";
   
     static getConstructorProperties (graphics: Graphic[]) {
         const source = new Collection();

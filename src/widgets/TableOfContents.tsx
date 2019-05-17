@@ -25,20 +25,7 @@ export default class TableOfContents extends declared(Accessor) {
       listItemCreatedFunction: event => {
         const item = event.item;
         if(item.layer.id === "interaction_points") {
-          item.actionsSections = [[
-            {
-              title: "Scale",
-              type: "toggle",
-              value: true,
-              id: "scale"
-            },
-            {
-              title: "Time since Session-Start",
-              type: "toggle",
-              value: false,
-              id: "sessionTime"
-            }
-          ]]
+          item.actionsSections = [initialActionSection]
         }
       }
     });
@@ -59,3 +46,36 @@ export default class TableOfContents extends declared(Accessor) {
 interface TableOfContentsParams {
   view: MapView
 }
+
+const initialActionSection = [
+  {
+    title: "Zoom Factor",
+    type: "toggle",
+    value: true,
+    id: "zoom"
+  },
+  {
+    title: "Scale",
+    type: "toggle",
+    value: false,
+    id: "scale"
+  },
+  {
+    title: "Interaction Count",
+    type: "toggle",
+    value: false,
+    id: "interactionCount"
+  },
+  {
+    title: "Time since Session-Start",
+    type: "toggle",
+    value: false,
+    id: "sessionTime"
+  },
+  {
+    title: "Time Since Last Interaction",
+    type: "toggle",
+    value: false,
+    id: "lastInteractionDelay"
+  }
+];
