@@ -24,7 +24,8 @@ export default class TableOfContents extends declared(Accessor) {
       view,
       listItemCreatedFunction: event => {
         const item = event.item;
-        const layer = item.layer as GeometryLayer;
+        const layer = item.layer;
+        if(!(layer instanceof GeometryLayer)) return;
         item.actionsSections = [layer.actions]
       }
     });

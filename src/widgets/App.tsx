@@ -19,6 +19,7 @@ import HistogramSlider from "./HistogramSlider";
 import TableOfContents from './TableOfContents';
 import LayerFactory from '../data/LayerFactory';
 import GeometryLayer from '../data/GeometryLayer';
+import appConfig from '../appConfig';
 
 interface AppViewParams extends esri.WidgetProperties {}
 
@@ -46,8 +47,8 @@ export default class App extends declared(Widget) {
   constructor(params: AppViewParams) {
     super(params);
     const appIds = config.appIds;
-    this.mapLeft = new EsriMap({basemap: config.basemap});
-    this.mapRight = new EsriMap({basemap: config.basemap});
+    this.mapLeft = new EsriMap({basemap: config.basemap, layers: [getTaskGeometriesLayer()]});
+    this.mapRight = new EsriMap({basemap: config.basemap, layers: [getTaskGeometriesLayer()]});
     const viewLeft = this.viewLeft = new MapView({
       extent: config.initialExtent,
       map: this.mapLeft,
@@ -153,9 +154,10 @@ export default class App extends declared(Widget) {
         targetMap.layers.find(targetLayer => {
           return targetLayer.id === layer.id;
         }).visible = visible;
-        // disable all other layers
+        if(!(layer instanceof GeometryLayer)) return;
         if(visible){
           sourceMap.layers.forEach(targetLayer => {
+            if(!(targetLayer instanceof GeometryLayer)) return;
             targetLayer.visible = targetLayer.id === layer.id;
           });
         }
@@ -173,7 +175,7 @@ export default class App extends declared(Widget) {
   }
 
   private updateSlider(map: EsriMap, slider: HistogramSlider){
-      const visibleLayer = map.layers.find(layer => layer.visible);
+      const visibleLayer = map.layers.find(layer => layer.visible && layer instanceof GeometryLayer);
       if(!visibleLayer) return;
       slider.visible = true;
       slider.layer = visibleLayer as GeometryLayer;
@@ -235,4 +237,12 @@ export default class App extends declared(Widget) {
       }
     };
   };
+}
+
+const getTaskGeometriesLayer = () => {
+  return new FeatureLayer({
+    url: appConfig.taskGeometriesLayer.url,
+    title: appConfig.taskGeometriesLayer.title,
+    id: appConfig.taskGeometriesLayer.id,
+  });
 }
