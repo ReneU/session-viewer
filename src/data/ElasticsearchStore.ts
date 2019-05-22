@@ -13,6 +13,9 @@ export default class ElasticsearchStore {
                 "query": {
                     "bool": {
                         "must": [
+                            { 
+                                "range" : { "map_scale" : { "lte" : 280000, "gte": 0 }}
+                            },
                             {
                                 "term" : { "app_id" : "${appId}" }
                             },
