@@ -10,55 +10,55 @@ export default class ElasticsearchStore {
                 "content-type": "application/json"
             },
             body: `{
-                "query": {
-                    "bool": {
-                        "must": [
-                            { 
-                                "range" : { "map_scale" : { "lte" : 280000, "gte": 0 }}
-                            },
-                            {
-                                "term" : { "app_id" : "${appId}" }
-                            },
-                            {
-                                "exists" : { "field" : "map_center" }
-                            }
-                        ]
-                    }
-                },
-                "size":0,
-                "aggs":{  
-                   "sessions":{  
-                      "terms":{  
-                         "field":"session.keyword",
-                         "size":100
-                      },
-                      "aggs":{  
-                         "events":{  
-                            "top_hits":{  
-                               "sort":[  
-                                  {  
-                                     "timestamp":{  
-                                        "order":"asc",
-                                        "unmapped_type":"long"
-                                     }
-                                  }
-                               ],
-                               "_source":{  
-                                  "includes":[  
-                                     "map_scale",
-                                     "map_zoom",
-                                     "map_center",
-                                     "message",
-                                     "timestamp"
-                                  ]
-                               },
-                               "size":100
-                            }
-                         }
-                      }
-                   }
-                }
-             }`
+               "query": {
+                  "bool": {
+                     "must": [
+                           { 
+                              "range" : { "map_scale" : { "lte" : 280000, "gte": 0 }}
+                           },
+                           {
+                              "term" : { "app_id" : "${appId}" }
+                           },
+                           {
+                              "exists" : { "field" : "map_center" }
+                           }
+                     ]
+                  }
+               },
+               "size":0,
+               "aggs":{  
+                  "sessions":{  
+                     "terms":{  
+                        "field":"session.keyword",
+                        "size":100
+                     },
+                     "aggs":{  
+                        "events":{  
+                           "top_hits":{  
+                              "sort":[  
+                                 {  
+                                    "timestamp":{  
+                                       "order":"asc",
+                                       "unmapped_type":"long"
+                                    }
+                                 }
+                              ],
+                              "_source":{  
+                                 "includes":[  
+                                    "map_scale",
+                                    "map_zoom",
+                                    "map_center",
+                                    "message",
+                                    "timestamp"
+                                 ]
+                              },
+                              "size":100
+                           }
+                        }
+                     }
+                  }
+               }
+            }`
           }).then(function(response){
             return response.data.aggregations;
           });
