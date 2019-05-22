@@ -54,7 +54,7 @@ export default class HistogramSlider extends declared(Accessor) {
 
   private render(){
     const basemap = appConfig.basemap;
-    const theme = "extremes";
+    const theme = "high-to-low";
     const view = this.view;
     const layer = this.layer;
     const field = layer.rendererField;
