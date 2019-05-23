@@ -1,7 +1,7 @@
 import { Point } from 'esri/geometry';
 import SpatialReference from 'esri/geometry/SpatialReference';
 
-export interface ElasticResponse {
+export interface EsResponse {
     sessions: ElasticSessions
 }
 

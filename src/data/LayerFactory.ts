@@ -1,4 +1,4 @@
-import {ElasticResponse, EsSession, EsEvent, SessionEvent, EventAttributes, Session} from "./DataInterfaces";
+import {EsResponse, EsSession, EsEvent, SessionEvent, Session} from "./DataInterfaces";
 import ElasticsearchStore from './ElasticsearchStore';
 import FeatureLayer from 'esri/layers/FeatureLayer';
 import PolylineLayer from './PolylineLayer';
@@ -76,7 +76,7 @@ export default class LayerFactory {
     }
 }
 
-const parseElasticResponse = (response: ElasticResponse) => {
+const parseElasticResponse = (response: EsResponse) => {
     return response.sessions.buckets.map((esSession: EsSession) => {
         const events = esSession.events.hits.hits;
         const sessionId = esSession.key;
