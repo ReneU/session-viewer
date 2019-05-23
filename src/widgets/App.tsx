@@ -69,15 +69,17 @@ export default class App extends declared(Widget) {
 
     const dataProvider = new LayerFactory(appIds);
 
-    dataProvider.createSessionTracksLayer(appIds[0]).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
-    dataProvider.createCharacteristicPointsLayer(appIds[0]).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
+    dataProvider.createSessionTracksLayer(appIds[0]).then((layer: GeometryLayer) => this.mapLeft.add(layer));
+    dataProvider.createCharacteristicPointsLayer(appIds[0]).then((layer: GeometryLayer) => this.mapLeft.add(layer));
+    dataProvider.createCharacteristicClusterLayer(appIds[0]).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
     const layerLeftReady = dataProvider.createInteractionPointsLayer(appIds[0])
       .then((layer: FeatureLayer) => {
         this.mapLeft.add(layer);
         this.layerLeft = layer;
       });
-    dataProvider.createSessionTracksLayer(appIds[1]).then((layer: GraphicsLayer) => this.mapRight.add(layer));
-    dataProvider.createCharacteristicPointsLayer(appIds[1]).then((layer: GraphicsLayer) => this.mapRight.add(layer));
+    dataProvider.createSessionTracksLayer(appIds[1]).then((layer: GeometryLayer) => this.mapRight.add(layer));
+    dataProvider.createCharacteristicPointsLayer(appIds[1]).then((layer: GeometryLayer) => this.mapRight.add(layer));
+    dataProvider.createCharacteristicClusterLayer(appIds[1]).then((layer: GraphicsLayer) => this.mapRight.add(layer));
     const layerRightReady = dataProvider.createInteractionPointsLayer(appIds[1])
       .then((layer: FeatureLayer) => {
         this.mapRight.add(layer);

@@ -9,10 +9,12 @@ import SpatialReference from 'esri/geometry/SpatialReference';
 import geometryEngine from "esri/geometry/geometryEngine";
 import { Point } from 'esri/geometry';
 import Graphic from "esri/Graphic";
+import Circle from 'esri/geometry/Circle';
+import GraphicsLayer from 'esri/layers/GraphicsLayer';
 
 const CONSTANTS = {
-    minRadius: 50,
-    maxRadius: 150,
+    minRadius: 1000,
+    maxRadius: 2000,
     maxDistance: 3000,
     timeThreshold: 3000
   };
@@ -56,16 +58,22 @@ export default class LayerFactory {
 
     createCharacteristicPointsLayer(appId: string) {
         return this[appId].then((sessions: Session[]) => {
-            const filter = (event: SessionEvent, idx: number, events: SessionEvent[]) => {
-                if(idx === 0) return true;
-                if(idx === events.length - 1) return false;
-                const eventAttr = event.attributes;
-                const nextEvent = events[idx + 1];
-                return eventAttr.lastInteractionDelay >= CONSTANTS.timeThreshold && getDistance(event.geometry, nextEvent.geometry) < CONSTANTS.maxDistance;
-            };
             const {title, id} = config.characteristicsLayer;
-            const pointGraphics = toPointGraphics(sessions, filter);
+            const pointGraphics = toPointGraphics(sessions, characteristicsFilter);
             return new PointLayer(PointLayer.getConstructorProps(pointGraphics, id ,title));
+        });
+    }
+
+    createCharacteristicClusterLayer(appId: string) {
+        return this[appId].then((sessions: Session[]) => {
+            const {title, id} = config.clusterLayer;
+            const pointGraphics = toPointGraphics(sessions, characteristicsFilter);
+            console.log(pointGraphics.length);
+            const clusterGraphics = toClusterGraphics(pointGraphics);
+            console.log(clusterGraphics.length);
+            const clusterLayer = new GraphicsLayer({ title, id, visible: false });
+            clusterLayer.addMany(clusterGraphics);
+            return clusterLayer
         });
     }
 
@@ -163,6 +171,58 @@ const toPolylineGraphics = (sessions: Session[]) => {
     return new PolylineLayer(PolylineLayer.getConstructorProps(polylineGraphics, id, title));
 }
 
+const toClusterGraphics = (pointGraphics: Graphic[]) => {
+    let clusters = [];
+    let previousSize;
+    while (pointGraphics.length > 0) {
+        previousSize = pointGraphics.length;
+        const pointGraphic = pointGraphics.shift()! as Graphic;
+        const point = pointGraphic.geometry as Point;
+        const circle = { center: point, radius: CONSTANTS.minRadius };
+        circle.center.z = pointGraphic.attributes.zoom;
+        let xmin, xmax, ymin, ymax;
+        xmin = xmax = point.x;
+        ymin = ymax = point.y;
+        while (pointGraphics.length > 0 && pointGraphics.length < previousSize) {
+            previousSize = pointGraphics.length;
+            let pointCandidate;
+            for (let i = 0; i < pointGraphics.length; i++) {
+                pointCandidate = pointGraphics[i].geometry as Point;
+                const pointZoom = pointGraphics[i].attributes.zoom;
+                if (isInside(pointCandidate, pointZoom, new Circle(circle))) {
+                    pointGraphics.splice(i, 1);
+                    xmin = Math.min(xmin, pointCandidate.x);
+                    xmax = Math.max(xmax, pointCandidate.x);
+                    ymin = Math.min(ymin, pointCandidate.y);
+                    ymin = Math.max(ymax, pointCandidate.y);
+                    extendClusterCircle(circle, xmin, xmax, ymin, ymax, CONSTANTS.minRadius, CONSTANTS.maxRadius);
+                }
+            }
+        }
+        const graphic = new Graphic({
+            geometry: new Circle(circle),
+            symbol: {
+                type: 'simple-fill',
+                color: [77, 175, 74, 0.3],
+                outline: {
+                    color: [255, 255, 255],
+                    width: 1
+                }
+            }
+        });
+        clusters.push(graphic);
+    }
+    return clusters;
+}
+
+const characteristicsFilter =  (event: SessionEvent, idx: number, events: SessionEvent[]) => {
+    if(idx === 0) return true;
+    if(idx === events.length - 1) return false;
+    const eventAttr = event.attributes;
+    const nextEvent = events[idx + 1];
+    return eventAttr.lastInteractionDelay >= CONSTANTS.timeThreshold && getDistance(event.geometry, nextEvent.geometry) < CONSTANTS.maxDistance;
+}
+
 const getSymbolFromGeometry = (feature: any) => {
     const width = 2;
     const size = 10;
@@ -209,6 +269,28 @@ const getDistance = (source: any, destination: any, esriUnit = 'meters') => {
     source = new Point(source);
     destination = new Point(destination);
     return geometryEngine.distance(source, destination, esriUnit);
+};
+
+const isInside = (point: Point, pointZ: number, circle: Circle) => {
+    if (Math.trunc(pointZ) !== Math.trunc(circle.center.z)) {
+        return false;
+    }
+    return geometryEngine.contains(circle, point);
+  };
+
+const extendClusterCircle = (circle: any, xmin: number, xmax: number, ymin: number, ymax: number, minRadius: number, maxRadius: number) => {
+    circle.center.x = (xmin + xmax) / 2;
+    circle.center.y = (ymin + ymax) / 2;
+    const { x, y, spatialReference } = circle.center;
+    const xExtent = getDistance(
+        Object.assign({ x, y, spatialReference }, { x: xmax }),
+        Object.assign({ x, y, spatialReference }, { x: xmin })
+    );
+    const yExtent = getDistance(
+        Object.assign({ x, y, spatialReference }, { y: ymax }),
+        Object.assign({ x, y, spatialReference }, { y: ymin })
+    );
+    circle.radius = Math.min(maxRadius, minRadius + (Math.max(xExtent, yExtent) / 2));
 };
 
 interface Polyline {
