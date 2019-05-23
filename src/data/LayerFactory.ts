@@ -1,5 +1,6 @@
 import {ElasticResponse, Session, Event} from "./DataInterfaces";
 import ElasticsearchStore from './ElasticsearchStore';
+import FeatureLayer from 'esri/layers/FeatureLayer';
 import PolylineLayer from './PolylineLayer';
 import PointLayer from './PointLayer';
 import config from "../appConfig";
@@ -16,12 +17,32 @@ const CONSTANTS = {
     timeThreshold: 3000
   };
 
-export default class DataProvider{
+export default class LayerFactory {
 
     constructor(appIds: string[]){
         appIds.forEach((id: string) => {
             this[id] = ElasticsearchStore.getAggregatedSessions(id);
         });
+    }
+
+    static createTaskGeometriesLayer() {
+        return new FeatureLayer({
+            url: config.taskGeometriesLayer.url,
+            title: config.taskGeometriesLayer.title,
+            id: config.taskGeometriesLayer.id,
+            renderer: {
+                type: "simple",
+                symbol: {
+                  type: "simple-marker",
+                  size:12,
+                  color: [255, 100, 46],
+                  outline: {
+                    width: 0,
+                    color: [255, 100, 46]
+                  }
+                }
+              }
+          });
     }
 
     createInteractionPointsLayer(appId: string){

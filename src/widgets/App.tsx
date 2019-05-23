@@ -19,7 +19,6 @@ import HistogramSlider from "./HistogramSlider";
 import TableOfContents from './TableOfContents';
 import LayerFactory from '../data/LayerFactory';
 import GeometryLayer from '../data/GeometryLayer';
-import appConfig from '../appConfig';
 
 interface AppViewParams extends esri.WidgetProperties {}
 
@@ -47,8 +46,8 @@ export default class App extends declared(Widget) {
   constructor(params: AppViewParams) {
     super(params);
     const appIds = config.appIds;
-    this.mapLeft = new EsriMap({basemap: config.basemap, layers: [getTaskGeometriesLayer()]});
-    this.mapRight = new EsriMap({basemap: config.basemap, layers: [getTaskGeometriesLayer()]});
+    this.mapLeft = new EsriMap({basemap: config.basemap, layers: [LayerFactory.createTaskGeometriesLayer()]});
+    this.mapRight = new EsriMap({basemap: config.basemap, layers: [LayerFactory.createTaskGeometriesLayer()]});
     const viewLeft = this.viewLeft = new MapView({
       extent: config.initialExtent,
       map: this.mapLeft,
@@ -237,12 +236,4 @@ export default class App extends declared(Widget) {
       }
     };
   };
-}
-
-const getTaskGeometriesLayer = () => {
-  return new FeatureLayer({
-    url: appConfig.taskGeometriesLayer.url,
-    title: appConfig.taskGeometriesLayer.title,
-    id: appConfig.taskGeometriesLayer.id,
-  });
 }
