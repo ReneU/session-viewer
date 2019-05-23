@@ -1,4 +1,4 @@
-import {ElasticResponse, Session, Event} from "./DataInterfaces";
+import {ElasticResponse, EsSession, EsEvent, SessionEvent, EventAttributes, Session} from "./DataInterfaces";
 import ElasticsearchStore from './ElasticsearchStore';
 import FeatureLayer from 'esri/layers/FeatureLayer';
 import PolylineLayer from './PolylineLayer';
@@ -21,7 +21,8 @@ export default class LayerFactory {
 
     constructor(appIds: string[]){
         appIds.forEach((id: string) => {
-            this[id] = ElasticsearchStore.getAggregatedSessions(id);
+            this[id] = ElasticsearchStore.getAggregatedSessions(id)
+                .then(parseElasticResponse);
         });
     }
 
@@ -46,65 +47,113 @@ export default class LayerFactory {
     }
 
     createInteractionPointsLayer(appId: string){
-        return this[appId].then((response: ElasticResponse) => {
+        return this[appId].then((sessions: Session[]) => {
             const {title, id} = config.interactionLayer;
-            const pointGraphics = toPointGraphics(response);
+            const pointGraphics = toPointGraphics(sessions);
             return new PointLayer(PointLayer.getConstructorProps(pointGraphics, id, title));
         });
     }
 
     createCharacteristicPointsLayer(appId: string) {
-        return this[appId].then((response: ElasticResponse) => {
-            const filter = (evt: Event, idx: number, events: Event[]) => {
+        return this[appId].then((sessions: Session[]) => {
+            const filter = (event: SessionEvent, idx: number, events: SessionEvent[]) => {
                 if(idx === 0) return true;
                 if(idx === events.length - 1) return false;
-                const eventProps = evt._source;
-                const nextEventProps = events[idx + 1]._source;
-                const timeDelta = nextEventProps.timestamp - eventProps.timestamp;
-                return timeDelta >= CONSTANTS.timeThreshold && getDistance(eventProps.map_center, nextEventProps.map_center) < CONSTANTS.maxDistance
+                const eventAttr = event.attributes;
+                const nextEvent = events[idx + 1];
+                return eventAttr.lastInteractionDelay >= CONSTANTS.timeThreshold && getDistance(event.geometry, nextEvent.geometry) < CONSTANTS.maxDistance;
             };
             const {title, id} = config.characteristicsLayer;
-            const pointGraphics = toPointGraphics(response, filter);
+            const pointGraphics = toPointGraphics(sessions, filter);
             return new PointLayer(PointLayer.getConstructorProps(pointGraphics, id ,title));
         });
     }
 
     createSessionTracksLayer(appId: string){
-        return this[appId].then((response: ElasticResponse) => {
-            return toPolylineGraphics(response);
+        return this[appId].then((sessions: Session[]) => {
+            return toPolylineGraphics(sessions);
         });
     }
 }
 
-const toPolylineGraphics = (response: ElasticResponse) => {
-    let trajectories: Polyline[] = [];
-    response.sessions.buckets.forEach(session => {
-        const sessionId = session.key;
+const parseElasticResponse = (response: ElasticResponse) => {
+    return response.sessions.buckets.map((esSession: EsSession) => {
+        const events = esSession.events.hits.hits;
+        const sessionId = esSession.key;
         let sessionStartDate: number;
-        const events = session.events.hits.hits;
-        events.forEach((event: Event, idx: number) => {
+        const totalSessionTime = events.reduce((totalTime: number, event: EsEvent) => {
+            const eventProps = event._source;
+            if (!sessionStartDate) {
+                sessionStartDate = eventProps.timestamp;
+            }
+            return (eventProps.timestamp - sessionStartDate) / 1000 + totalTime;
+        }, 0);
+        const session = {id: sessionId, events: []};
+        session.events = events.map((event: EsEvent, idx: number) => {
             const eventProps = event._source;
             if (idx === 0) {
                 sessionStartDate = eventProps.timestamp;
-                return
             }
-            const prevEventProps = events[idx - 1]._source;
-            const source = [prevEventProps.map_center.x, prevEventProps.map_center.y];
-            const destination = [eventProps.map_center.x, eventProps.map_center.y];
             const sessionTime = eventProps.timestamp - sessionStartDate;
-            trajectories.push({
-                type: 'polyline',
-                paths: [source, destination],
-                spatialReference: new SpatialReference({ wkid: eventProps.map_center.spatialReference.wkid }),
+            const lastInteractionDelay = !!idx ? sessionTime - (events[idx - 1]._source.timestamp - sessionStartDate) : 0;
+            return {
                 attributes: {
                     ObjectID: event._id,
                     sessionId,
                     interactionCount: idx,
                     topic: eventProps.message,
-                    scaleDiff: eventProps.map_scale - prevEventProps.map_scale,
-                    zoomDiff: eventProps.map_zoom - prevEventProps.map_zoom,
-                    lastInteractionDelay: prevEventProps.timestamp - eventProps.timestamp,
-                    sessionTime: sessionTime / 1000
+                    scale: eventProps.map_scale,
+                    zoom: eventProps.map_zoom,
+                    elapsedSessionTime: sessionTime / 1000,
+                    lastInteractionDelay,
+                    totalSessionTime
+                },
+                geometry: eventProps.map_center
+            } as SessionEvent;
+        });
+        return session;
+    });
+};
+
+function toPointGraphics(sessions: Session[], filter?: (evt: SessionEvent, idx: number, evts: SessionEvent[]) => {}) {
+    return sessions.reduce((tempGraphics: Graphic[], session: Session) => {
+        session.events.forEach((event: SessionEvent, idx: number) => {
+            if(!filter || (filter && filter(event, idx, session.events))){
+                tempGraphics.push(new Graphic({
+                    attributes: event.attributes,
+                    geometry: new Point(event.geometry)
+                }));
+            }
+        });
+        return tempGraphics;
+    }, []);
+}
+
+const toPolylineGraphics = (sessions: Session[]) => {
+    let trajectories: Polyline[] = [];
+    sessions.forEach((session: Session) => {
+        session.events.forEach((event: SessionEvent, idx: number) => {
+            if (idx === 0) return;
+            const prevEvent = session.events[idx - 1];
+            const prevEventAttr = prevEvent.attributes;
+            const prevEventGeom = prevEvent.geometry;
+            const source = [prevEventGeom.x, prevEventGeom.y];
+            const destination = [event.geometry.x, event.geometry.y];
+            const eventAttr = event.attributes;
+            trajectories.push({
+                type: 'polyline',
+                paths: [source, destination],
+                spatialReference: new SpatialReference({ wkid: event.geometry.spatialReference.wkid }),
+                attributes: {
+                    topic: eventAttr.topic,
+                    ObjectID: eventAttr.ObjectID,
+                    sessionId: eventAttr.sessionId,
+                    interactionCount: eventAttr.interactionCount,
+                    zoomDiff: eventAttr.zoom - prevEventAttr.zoom,
+                    elapsedSessionTime: eventAttr.elapsedSessionTime,
+                    scaleDiff: eventAttr.scale - prevEventAttr.scale,
+                    lastInteractionDelay: eventAttr.lastInteractionDelay,
+                    totalSessionTime: eventAttr.totalSessionTime
                 },
             });
         });
@@ -112,46 +161,6 @@ const toPolylineGraphics = (response: ElasticResponse) => {
     const {title, id} = config.trajectoriesLayer;
     const polylineGraphics = toGraphics(trajectories);
     return new PolylineLayer(PolylineLayer.getConstructorProps(polylineGraphics, id, title));
-}
-
-function toPointGraphics(response: ElasticResponse, filter?: (evt: Event, idx: number, evts: Event[]) => {}) {
-    return response.sessions.buckets.reduce((tempGraphics: Graphic[], session: Session) => {
-        const events = session.events.hits.hits;
-        const sessionId = session.key;
-        let sessionStartDate: number;
-        const totalSessionTime = events.reduce((totalTime: number, event: Event) => {
-            const eventProps = event._source;
-            if (!sessionStartDate) {
-                sessionStartDate = eventProps.timestamp;
-            }
-            return (eventProps.timestamp - sessionStartDate) / 1000 + totalTime;
-        }, 0);
-        events.forEach((event: Event, idx: number) => {
-            const eventProps = event._source;
-            if (idx === 0) {
-                sessionStartDate = eventProps.timestamp;
-            }
-            if(!filter || (filter && filter(event, idx, events))){
-                const sessionTime = eventProps.timestamp - sessionStartDate;
-                const lastInteractionDelay = !!idx ? sessionTime - (events[idx - 1]._source.timestamp - sessionStartDate) : 0;
-                tempGraphics.push(new Graphic({
-                    attributes: {
-                        ObjectID: event._id,
-                        sessionId,
-                        interactionCount: idx,
-                        topic: eventProps.message,
-                        scale: eventProps.map_scale,
-                        zoom: eventProps.map_zoom,
-                        elapsedSessionTime: sessionTime / 1000,
-                        lastInteractionDelay,
-                        totalSessionTime
-                    },
-                    geometry: new Point(eventProps.map_center)
-                }));
-            }
-        });
-        return tempGraphics;
-    }, []);
 }
 
 const getSymbolFromGeometry = (feature: any) => {

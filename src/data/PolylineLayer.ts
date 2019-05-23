@@ -39,8 +39,13 @@ import {
             type: "double"
         }),
         new Field ({
-            name: "sessionTime",
-            alias: "SessionTime",
+            name: "elapsedSessionTime",
+            alias: "elapsedSessionTime",
+            type: "double"
+        }),
+        new Field ({
+            name: "totalSessionTime",
+            alias: "totalSessionTime",
             type: "double"
         }),
         new Field ({
@@ -74,13 +79,19 @@ import {
             id: "interactionCount"
         },
         {
-            title: "Time since Session-Start",
+            title: "Time since Session-Start (s)",
             type: "toggle",
             value: false,
-            id: "sessionTime"
+            id: "elapsedSessionTime"
         },
         {
-            title: "Time Since Last Interaction",
+            title: "Total Session-Time (s)",
+            type: "toggle",
+            value: false,
+            id: "totalSessionTime"
+        },
+        {
+            title: "Time since last Interaction (s)",
             type: "toggle",
             value: false,
             id: "lastInteractionDelay"
