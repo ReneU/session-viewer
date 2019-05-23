@@ -116,27 +116,35 @@ const toPolylineGraphics = (response: ElasticResponse) => {
 
 function toPointGraphics(response: ElasticResponse, filter?: (evt: Event, idx: number, evts: Event[]) => {}) {
     return response.sessions.buckets.reduce((tempGraphics: Graphic[], session: Session) => {
+        const events = session.events.hits.hits;
         const sessionId = session.key;
         let sessionStartDate: number;
-        const events = session.events.hits.hits;
-        events.forEach((event: Event, i: number) => {
+        const totalSessionTime = events.reduce((totalTime: number, event: Event) => {
             const eventProps = event._source;
-            if (i === 0) {
+            if (!sessionStartDate) {
                 sessionStartDate = eventProps.timestamp;
             }
-            if(!filter || (filter && filter(event, i, events))){
+            return (eventProps.timestamp - sessionStartDate) / 1000 + totalTime;
+        }, 0);
+        events.forEach((event: Event, idx: number) => {
+            const eventProps = event._source;
+            if (idx === 0) {
+                sessionStartDate = eventProps.timestamp;
+            }
+            if(!filter || (filter && filter(event, idx, events))){
                 const sessionTime = eventProps.timestamp - sessionStartDate;
-                const lastInteractionDelay = !!i ? sessionTime - (events[i - 1]._source.timestamp - sessionStartDate) : 0;
+                const lastInteractionDelay = !!idx ? sessionTime - (events[idx - 1]._source.timestamp - sessionStartDate) : 0;
                 tempGraphics.push(new Graphic({
                     attributes: {
                         ObjectID: event._id,
                         sessionId,
-                        interactionCount: i,
+                        interactionCount: idx,
                         topic: eventProps.message,
                         scale: eventProps.map_scale,
                         zoom: eventProps.map_zoom,
+                        elapsedSessionTime: sessionTime / 1000,
                         lastInteractionDelay,
-                        sessionTime: sessionTime / 1000
+                        totalSessionTime
                     },
                     geometry: new Point(eventProps.map_center)
                 }));
