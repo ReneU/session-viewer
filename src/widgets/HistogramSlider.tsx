@@ -3,10 +3,10 @@ import {clone} from "esri/core/lang";
 import d_construct from "dojo/dom-construct";
 
 import { declared, property, subclass } from "esri/core/accessorSupport/decorators";
-import MapView from "esri/views/MapView";
 import {createContinuousRenderer} from "esri/renderers/smartMapping/creators/color";
 import histogram from "esri/renderers/smartMapping/statistics/histogram";
 import ColorSlider from "esri/widgets/ColorSlider";
+import MapView from "esri/views/MapView";
 
 import GeometryLayer from '../data/GeometryLayer';
 import appConfig from '../appConfig';

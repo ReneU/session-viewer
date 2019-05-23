@@ -34,7 +34,7 @@ export default class LayerFactory {
                 type: "simple",
                 symbol: {
                   type: "simple-marker",
-                  size:12,
+                  size: 12,
                   color: [255, 100, 46],
                   outline: {
                     width: 0,
