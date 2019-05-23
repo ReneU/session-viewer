@@ -12,16 +12,29 @@ export default class ElasticsearchStore {
             body: `{
                "query": {
                   "bool": {
-                     "must": [
-                           { 
-                              "range" : { "map_scale" : { "lte" : 280000, "gte": 0 }}
-                           },
-                           {
-                              "term" : { "app_id" : "${appId}" }
-                           },
-                           {
-                              "exists" : { "field" : "map_center" }
+                     "minimum_should_match": 1,
+                     "should": [
+                        {
+                           "term": {
+                              "message.keyword": "map-init CENTER_CHANGED"
                            }
+                        },
+                        {
+                           "term": {
+                              "message.keyword": "Framework  STARTED"
+                           }
+                        }
+                     ],
+                     "must": [
+                        { 
+                           "range" : { "map_scale" : { "lte" : 280000, "gte": 0 }}
+                        },
+                        {
+                           "term" : { "app_id" : "${appId}" }
+                        },
+                        {
+                           "exists" : { "field" : "map_center" }
+                        }
                      ]
                   }
                },
