@@ -1,7 +1,7 @@
 export default {
     "appName": "Session Viewer",
-    "scenarioA": "Scenario A",
-    "scenarioB": "Scenario B",
+    "scenarioA": "With Off-Screen Indicators",
+    "scenarioB": "Without Off-Screen Indicators",
     "basemap": "dark-gray",
     "initialExtent":  {
         "xmin":836278.4172107871,

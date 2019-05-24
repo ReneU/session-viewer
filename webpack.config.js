@@ -82,7 +82,7 @@ module.exports = function(_, arg) {
       new ArcGISPlugin(),
 
       new HtmlWebPackPlugin({
-        title: "ArcGIS Template Application",
+        title: "WebGIS Session Viewer",
         template: "./src/index.ejs",
         filename: "./index.html",
         favicon: "./src/assets/favicon.ico",
@@ -106,9 +106,9 @@ module.exports = function(_, arg) {
       new HtmlWebpackInlineSourcePlugin(),
 
       new WebpackPwaManifest({
-        name: "ArcGIS Application Template",
-        short_name: "ArcGISWebApp",
-        description: "My ArcGIS Template Application",
+        name: "WebGIS Session Viewer",
+        short_name: "WebGISSessionViewer",
+        description: "Geospatial Viewer for WebGIS Session Data",
         background_color: "#0079c1",
         theme_color: "#0079c1",
         icons: [
