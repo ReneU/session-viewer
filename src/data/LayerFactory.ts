@@ -68,9 +68,7 @@ export default class LayerFactory {
         return this[appId].then((sessions: Session[]) => {
             const {title, id} = config.clusterLayer;
             const pointGraphics = toPointGraphics(sessions, characteristicsFilter);
-            console.log(pointGraphics.length);
             const clusterGraphics = toClusterGraphics(pointGraphics);
-            console.log(clusterGraphics.length);
             const clusterLayer = new GraphicsLayer({ title, id, visible: false });
             clusterLayer.addMany(clusterGraphics);
             return clusterLayer
