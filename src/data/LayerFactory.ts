@@ -10,6 +10,7 @@ import geometryEngine from "esri/geometry/geometryEngine";
 import { Point } from 'esri/geometry';
 import Graphic from "esri/Graphic";
 import Circle from 'esri/geometry/Circle';
+import Polyline from 'esri/geometry/Polyline';
 import GraphicsLayer from 'esri/layers/GraphicsLayer';
 
 const CONSTANTS = {
@@ -64,20 +65,37 @@ export default class LayerFactory {
         });
     }
 
-    createCharacteristicClusterLayer(appId: string) {
+    createSummarizedMovesLayer(appId: string) {
         return this[appId].then((sessions: Session[]) => {
             const {title, id} = config.clusterLayer;
-            const pointGraphics = toPointGraphics(sessions, characteristicsFilter);
-            const clusterGraphics = toClusterGraphics(pointGraphics);
+            const characteristicPoints = sessions.reduce((tempEvents: SessionEvent[], session: Session) => {
+                const events = session.events;
+                const filteredSessionEvents = events.filter((event: SessionEvent, idx: number) => {
+                    if(idx === 0) return true;
+                    if(idx === events.length - 1) return false;
+                    const eventAttr = event.attributes;
+                    const nextEvent = events[idx + 1];
+                    return eventAttr.lastInteractionDelay >= CONSTANTS.timeThreshold && getDistance(event.geometry, nextEvent.geometry) < CONSTANTS.maxDistance;
+                });
+                return tempEvents.concat(filteredSessionEvents);
+            }, []);
+            console.log(characteristicPoints.length);
+            const clusters = toClusters(characteristicPoints);
+            console.log(clusters.length);
+            const trajectories = toPolylines(sessions);
+            const summarizedMoves = toSummarizedMoves(trajectories, clusters);
             const clusterLayer = new GraphicsLayer({ title, id, visible: false });
-            clusterLayer.addMany(clusterGraphics);
+            clusterLayer.addMany(summarizedMoves);
             return clusterLayer
         });
     }
 
     createSessionTracksLayer(appId: string){
         return this[appId].then((sessions: Session[]) => {
-            return toPolylineGraphics(sessions);
+            const trajectories = toPolylines(sessions);
+            const {title, id} = config.trajectoriesLayer;
+            const polylineGraphics = toGraphics(trajectories);
+            return new PolylineLayer(PolylineLayer.getConstructorProps(polylineGraphics, id, title));
         });
     }
 }
@@ -135,7 +153,7 @@ function toPointGraphics(sessions: Session[], filter?: (evt: SessionEvent, idx: 
     }, []);
 }
 
-const toPolylineGraphics = (sessions: Session[]) => {
+const toPolylines = (sessions: Session[]) => {
     let trajectories: Polyline[] = [];
     sessions.forEach((session: Session) => {
         session.events.forEach((event: SessionEvent, idx: number) => {
@@ -155,8 +173,12 @@ const toPolylineGraphics = (sessions: Session[]) => {
                     ObjectID: eventAttr.ObjectID,
                     sessionId: eventAttr.sessionId,
                     interactionCount: eventAttr.interactionCount,
+                    startZoom: prevEventAttr.zoom,
+                    endZoom: eventAttr.zoom,
                     zoomDiff: eventAttr.zoom - prevEventAttr.zoom,
                     elapsedSessionTime: eventAttr.elapsedSessionTime,
+                    startScale: prevEventAttr.scale,
+                    endScale: eventAttr.scale,
                     scaleDiff: eventAttr.scale - prevEventAttr.scale,
                     lastInteractionDelay: eventAttr.lastInteractionDelay,
                     totalSessionTime: eventAttr.totalSessionTime
@@ -164,31 +186,29 @@ const toPolylineGraphics = (sessions: Session[]) => {
             });
         });
     });
-    const {title, id} = config.trajectoriesLayer;
-    const polylineGraphics = toGraphics(trajectories);
-    return new PolylineLayer(PolylineLayer.getConstructorProps(polylineGraphics, id, title));
+    return trajectories;
 }
 
-const toClusterGraphics = (pointGraphics: Graphic[]) => {
+const toClusters = (events: SessionEvent[]) => {
     let clusters = [];
     let previousSize;
-    while (pointGraphics.length > 0) {
-        previousSize = pointGraphics.length;
-        const pointGraphic = pointGraphics.shift()! as Graphic;
-        const point = pointGraphic.geometry as Point;
+    while (events.length > 0) {
+        previousSize = events.length;
+        const event = events.shift()!;
+        const point = event.geometry;
         const circle = { center: point, radius: CONSTANTS.minRadius };
-        circle.center.z = pointGraphic.attributes.zoom;
+        circle.center.z = event.attributes.zoom;
         let xmin, xmax, ymin, ymax;
         xmin = xmax = point.x;
         ymin = ymax = point.y;
-        while (pointGraphics.length > 0 && pointGraphics.length < previousSize) {
-            previousSize = pointGraphics.length;
+        while (events.length > 0 && events.length < previousSize) {
+            previousSize = events.length;
             let pointCandidate;
-            for (let i = 0; i < pointGraphics.length; i++) {
-                pointCandidate = pointGraphics[i].geometry as Point;
-                const pointZoom = pointGraphics[i].attributes.zoom;
+            for (let i = 0; i < events.length; i++) {
+                pointCandidate = events[i].geometry as Point;
+                const pointZoom = events[i].attributes.zoom;
                 if (isInside(pointCandidate, pointZoom, new Circle(circle))) {
-                    pointGraphics.splice(i, 1);
+                    events.splice(i, 1);
                     xmin = Math.min(xmin, pointCandidate.x);
                     xmax = Math.max(xmax, pointCandidate.x);
                     ymin = Math.min(ymin, pointCandidate.y);
@@ -197,20 +217,59 @@ const toClusterGraphics = (pointGraphics: Graphic[]) => {
                 }
             }
         }
-        const graphic = new Graphic({
-            geometry: new Circle(circle),
-            symbol: {
-                type: 'simple-fill',
-                color: [77, 175, 74, 0.3],
-                outline: {
-                    color: [255, 255, 255],
-                    width: 1
-                }
+        clusters.push({
+            circle,
+            attributes: {
+                scale: event.attributes.scale,
+                zoom: event.attributes.zoom
             }
         });
-        clusters.push(graphic);
     }
     return clusters;
+}
+
+const toSummarizedMoves = (trajectories: Polyline[], clusters: any[]) => {
+    const summarizedMoves = [];
+    trajectories.forEach(track => {
+        if(track.paths.length < 3) return;
+        const spatialReference = track.spatialReference;
+        let i = 1;
+        const startingNode = track.paths[0];
+        const startingPoint = new Point({ x: startingNode[0], y: startingNode[1], z: startingNode[2], spatialReference });
+        let startCluster = clusters.find(cluster => isInside(startingPoint, cluster));
+        for (let k = 1; k < track.paths.length; k++) {
+            const node = track.paths[k];
+            const point = new Point({ x: node[0], y: node[1], z: node[2], spatialReference });
+            if (!isInside(point, startCluster)) {
+                const cluster = clusters.find(cluster => isInside(point, cluster));
+                if (cluster) {
+                    let summarizedMove = summarizedMoves.find(move => {
+                        return isSameCircle(move.start, startCluster) && isSameCircle(move.end, cluster);
+                    });
+                    if (!summarizedMove) {
+                        summarizedMove = { start: startCluster, end: cluster, moves: [] };
+                        summarizedMoves.push(summarizedMove);
+                    }
+                    summarizedMove.moves.push([track.paths[i], track.paths[k]]);
+                    startCluster = cluster;
+                    i = k;
+                }
+            } else {
+                i++;
+            }
+        }
+    });
+    return summarizedMoves.map(move => {
+        return {
+        type: 'polyline',
+        width: move.moves.length,
+        paths: [
+            [move.start.center.x, move.start.center.y, move.start.center.z],
+            [move.end.center.x, move.end.center.y, move.end.center.z]
+        ],
+        spatialReference: { wkid: 4326 }
+        };
+    });
 }
 
 const characteristicsFilter =  (event: SessionEvent, idx: number, events: SessionEvent[]) => {
@@ -290,10 +349,3 @@ const extendClusterCircle = (circle: any, xmin: number, xmax: number, ymin: numb
     );
     circle.radius = Math.min(maxRadius, minRadius + (Math.max(xExtent, yExtent) / 2));
 };
-
-interface Polyline {
-    type: string,
-    paths: number[][]
-    attributes: any,
-    spatialReference?: SpatialReference
-}
