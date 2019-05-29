@@ -54,3 +54,42 @@ interface EventGeometry {
     y: number,
     spatialReference: SpatialReference
 }
+
+export interface Cluster {
+    circle: any,
+    attributes: ClusterAttributes
+}
+
+interface ClusterAttributes {
+    scale: number,
+    zoom: number
+}
+
+export interface Move {
+    start: Cluster,
+    end: Cluster,
+    count: number
+}
+
+export interface Track {
+    type: string,
+    paths: any[],
+    spatialReference: SpatialReference,
+    attributes: TrackAttributes
+}
+
+interface TrackAttributes {
+    topic: string,
+    ObjectID: string,
+    sessionId: string,
+    interactionCount: number,
+    startZoom: number,
+    endZoom: number,
+    zoomDiff: number,
+    elapsedSessionTime: number,
+    startScale: number,
+    endScale: number,
+    scaleDiff: number,
+    lastInteractionDelay: number,
+    totalSessionTime: number
+}

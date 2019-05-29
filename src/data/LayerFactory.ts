@@ -1,4 +1,4 @@
-import {EsResponse, EsSession, EsEvent, SessionEvent, Session} from "./DataInterfaces";
+import {EsResponse, EsSession, EsEvent, SessionEvent, Session, Cluster, Move, Track} from "./DataInterfaces";
 import ElasticsearchStore from './ElasticsearchStore';
 import FeatureLayer from 'esri/layers/FeatureLayer';
 import PolylineLayer from './PolylineLayer';
@@ -10,7 +10,6 @@ import geometryEngine from "esri/geometry/geometryEngine";
 import { Point } from 'esri/geometry';
 import Graphic from "esri/Graphic";
 import Circle from 'esri/geometry/Circle';
-import Polyline from 'esri/geometry/Polyline';
 import GraphicsLayer from 'esri/layers/GraphicsLayer';
 
 const CONSTANTS = {
@@ -67,7 +66,7 @@ export default class LayerFactory {
 
     createSummarizedMovesLayer(appId: string) {
         return this[appId].then((sessions: Session[]) => {
-            const {title, id} = config.clusterLayer;
+            const {title, id} = config.movesLayer;
             const characteristicPoints = sessions.reduce((tempEvents: SessionEvent[], session: Session) => {
                 const events = session.events;
                 const filteredSessionEvents = events.filter((event: SessionEvent, idx: number) => {
@@ -79,11 +78,12 @@ export default class LayerFactory {
                 });
                 return tempEvents.concat(filteredSessionEvents);
             }, []);
-            console.log(characteristicPoints.length);
+            console.log(appId + " - characteristicPoints - " + characteristicPoints.length);
             const clusters = toClusters(characteristicPoints);
-            console.log(clusters.length);
+            console.log(appId + " - clusters - " + clusters.length);
             const trajectories = toPolylines(sessions);
             const summarizedMoves = toSummarizedMoves(trajectories, clusters);
+            console.log(appId + " - summarizedMoves - " + summarizedMoves.length);
             const clusterLayer = new GraphicsLayer({ title, id, visible: false });
             clusterLayer.addMany(summarizedMoves);
             return clusterLayer
@@ -154,7 +154,7 @@ function toPointGraphics(sessions: Session[], filter?: (evt: SessionEvent, idx: 
 }
 
 const toPolylines = (sessions: Session[]) => {
-    let trajectories: Polyline[] = [];
+    let trajectories: Track[] = [];
     sessions.forEach((session: Session) => {
         session.events.forEach((event: SessionEvent, idx: number) => {
             if (idx === 0) return;
@@ -166,7 +166,7 @@ const toPolylines = (sessions: Session[]) => {
             const eventAttr = event.attributes;
             trajectories.push({
                 type: 'polyline',
-                paths: [source, destination],
+                paths: [[source, destination]],
                 spatialReference: new SpatialReference({ wkid: event.geometry.spatialReference.wkid }),
                 attributes: {
                     topic: eventAttr.topic,
@@ -190,7 +190,7 @@ const toPolylines = (sessions: Session[]) => {
 }
 
 const toClusters = (events: SessionEvent[]) => {
-    let clusters = [];
+    let clusters: Cluster[] = [];
     let previousSize;
     while (events.length > 0) {
         previousSize = events.length;
@@ -228,48 +228,42 @@ const toClusters = (events: SessionEvent[]) => {
     return clusters;
 }
 
-const toSummarizedMoves = (trajectories: Polyline[], clusters: any[]) => {
-    const summarizedMoves = [];
-    trajectories.forEach(track => {
-        if(track.paths.length < 3) return;
-        const spatialReference = track.spatialReference;
-        let i = 1;
-        const startingNode = track.paths[0];
-        const startingPoint = new Point({ x: startingNode[0], y: startingNode[1], z: startingNode[2], spatialReference });
-        let startCluster = clusters.find(cluster => isInside(startingPoint, cluster));
-        for (let k = 1; k < track.paths.length; k++) {
-            const node = track.paths[k];
-            const point = new Point({ x: node[0], y: node[1], z: node[2], spatialReference });
-            if (!isInside(point, startCluster)) {
-                const cluster = clusters.find(cluster => isInside(point, cluster));
-                if (cluster) {
-                    let summarizedMove = summarizedMoves.find(move => {
-                        return isSameCircle(move.start, startCluster) && isSameCircle(move.end, cluster);
-                    });
-                    if (!summarizedMove) {
-                        summarizedMove = { start: startCluster, end: cluster, moves: [] };
-                        summarizedMoves.push(summarizedMove);
-                    }
-                    summarizedMove.moves.push([track.paths[i], track.paths[k]]);
-                    startCluster = cluster;
-                    i = k;
-                }
-            } else {
-                i++;
-            }
+const toSummarizedMoves = (tracks: Track[], clusters: Cluster[]) => {
+    const summarizedMoves: Move[] = [];
+    tracks.forEach(track => {
+        const path = track.paths[0]
+        const trackAttr = track.attributes;
+        const startPoint = new Point({x: path[0][0], y: path[0][1], spatialReference: track.spatialReference});
+        const startCluster = clusters.find(cluster => isInside(startPoint, trackAttr.startZoom, new Circle(cluster.circle)));
+        if(!startCluster) return;
+        const endPoint = new Point({x: path[1][0], y: path[1][1], spatialReference: track.spatialReference});
+        const endCluster = clusters.find(cluster => isInside(endPoint, trackAttr.endZoom, new Circle(cluster.circle)));
+        if(!endCluster) return;
+        let summarizedMove = summarizedMoves.find(move => isSameCluster(move.start, endCluster) && isSameCluster(startCluster, move.start));
+        if(!summarizedMove) {
+            summarizedMove = { start: startCluster, end: endCluster, count: 1 };
+            summarizedMoves.push(summarizedMove);
+        } else {
+            summarizedMove.count++;
         }
     });
     return summarizedMoves.map(move => {
-        return {
-        type: 'polyline',
-        width: move.moves.length,
-        paths: [
-            [move.start.center.x, move.start.center.y, move.start.center.z],
-            [move.end.center.x, move.end.center.y, move.end.center.z]
-        ],
-        spatialReference: { wkid: 4326 }
-        };
-    });
+        return new Graphic({
+            geometry: {
+                type: 'polyline',
+                paths: [
+                    [move.start.circle.center.x, move.start.circle.center.y, move.start.circle.center.z],
+                    [move.end.circle.center.x, move.end.circle.center.y, move.end.circle.center.z]
+                ],
+                spatialReference: move.start.circle.center.spatialReference
+            },
+            symbol: {
+                type: 'simple-line',
+                color: [255, 127, 0],
+                width: move.count
+            }
+        });
+    })
 }
 
 const characteristicsFilter =  (event: SessionEvent, idx: number, events: SessionEvent[]) => {
@@ -333,7 +327,7 @@ const isInside = (point: Point, pointZ: number, circle: Circle) => {
         return false;
     }
     return geometryEngine.contains(circle, point);
-  };
+};
 
 const extendClusterCircle = (circle: any, xmin: number, xmax: number, ymin: number, ymax: number, minRadius: number, maxRadius: number) => {
     circle.center.x = (xmin + xmax) / 2;
@@ -349,3 +343,11 @@ const extendClusterCircle = (circle: any, xmin: number, xmax: number, ymin: numb
     );
     circle.radius = Math.min(maxRadius, minRadius + (Math.max(xExtent, yExtent) / 2));
 };
+
+const isSameCluster = (first: Cluster, second: Cluster) => {
+    const firstCenter = first.circle.center;
+    const secondCenter = second.circle.center;
+    return firstCenter.x === secondCenter.x &&
+        firstCenter.y === secondCenter.y &&
+        firstCenter.z === secondCenter.z;
+  };

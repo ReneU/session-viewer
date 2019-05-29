@@ -25,9 +25,9 @@ export default {
         title: "Trajectories",
         id: "trajectories"
     },
-    "clusterLayer": {
-        title: "Cluster",
-        id: "cluster"
+    "movesLayer": {
+        title: "Summarized Moves",
+        id: "moves"
     },
     taskGeometriesLayer: {
         url: "https://services1.arcgis.com/XRQ58kpEa17kSlHX/arcgis/rest/services/test_mapapps_days/FeatureServer/0",
