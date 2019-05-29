@@ -106,7 +106,7 @@ import {
             title,
             source,
             visible: false,
-            fields: PointLayer.fields,
+            fields: InteractionsLayer.fields,
             objectIdField: "ObjectID"
         }
     }

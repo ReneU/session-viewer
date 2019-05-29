@@ -11,6 +11,7 @@ import { Point } from 'esri/geometry';
 import Graphic from "esri/Graphic";
 import Circle from 'esri/geometry/Circle';
 import GraphicsLayer from 'esri/layers/GraphicsLayer';
+import MovesLayer from './MovesLayer';
 
 const CONSTANTS = {
     minRadius: 1000,
@@ -76,9 +77,7 @@ export default class LayerFactory {
             const trajectories = toPolylines(sessions);
             const summarizedMoves = toSummarizedMoves(trajectories, clusters);
             console.log(appId + " - summarizedMoves - " + summarizedMoves.length);
-            const clusterLayer = new GraphicsLayer({ title, id, visible: false });
-            clusterLayer.addMany(summarizedMoves);
-            return clusterLayer
+            return new MovesLayer(MovesLayer.getConstructorProps(summarizedMoves, id, title));
         });
     }
 
@@ -259,7 +258,8 @@ const toSummarizedMoves = (tracks: Track[], clusters: Cluster[]) => {
             },
             attributes: {
                 zoomDiff: end.attributes.zoom - start.attributes.zoom,
-                scaleDiff: end.attributes.scale - start.attributes.scale
+                scaleDiff: end.attributes.scale - start.attributes.scale,
+                interactionCount: count
             },
             symbol: {
                 type: 'simple-line',

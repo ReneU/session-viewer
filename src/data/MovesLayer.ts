@@ -7,10 +7,10 @@ import GeometryLayer from "./GeometryLayer";
 import Collection from "esri/core/Collection";
 import Field from "esri/layers/support/Field";
 import Graphic from "esri/Graphic";
-
-@subclass()
-export default class TracksLayer extends declared(GeometryLayer) {
   
+@subclass()
+export default class MovesLayer extends declared(GeometryLayer) {
+
     rendererField = "zoomDiff";
     static fields = [
         new Field({
@@ -18,34 +18,9 @@ export default class TracksLayer extends declared(GeometryLayer) {
             alias: "ObjectID",
             type: "oid"
         }),
-        new Field({
-            name: "sessionId",
-            alias: "SessionID",
-            type: "string"
-        }),
-        new Field ({
-            name: "topic",
-            alias: "Topic",
-            type: "string"
-        }),
         new Field ({
             name: "interactionCount",
             alias: "InteractionCount",
-            type: "double"
-        }),
-        new Field ({
-            name: "lastInteractionDelay",
-            alias: "LastInteractionDelay",
-            type: "double"
-        }),
-        new Field ({
-            name: "elapsedSessionTime",
-            alias: "elapsedSessionTime",
-            type: "double"
-        }),
-        new Field ({
-            name: "totalSessionTime",
-            alias: "totalSessionTime",
             type: "double"
         }),
         new Field ({
@@ -77,24 +52,6 @@ export default class TracksLayer extends declared(GeometryLayer) {
             type: "toggle",
             value: false,
             id: "interactionCount"
-        },
-        {
-            title: "Time since Session-Start (s)",
-            type: "toggle",
-            value: false,
-            id: "elapsedSessionTime"
-        },
-        {
-            title: "Total Session-Time (s)",
-            type: "toggle",
-            value: false,
-            id: "totalSessionTime"
-        },
-        {
-            title: "Time since last Interaction (s)",
-            type: "toggle",
-            value: false,
-            id: "lastInteractionDelay"
         }
         ];
 
@@ -106,7 +63,7 @@ export default class TracksLayer extends declared(GeometryLayer) {
             title,
             source,
             visible: false,
-            fields: TracksLayer.fields,
+            fields: MovesLayer.fields,
             objectIdField: "ObjectID"
         }
     }
