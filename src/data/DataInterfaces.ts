@@ -1,5 +1,6 @@
-import { Point } from 'esri/geometry';
 import SpatialReference from 'esri/geometry/SpatialReference';
+import Circle from 'esri/geometry/Circle';
+import { Point } from 'esri/geometry';
 
 export interface EsResponse {
     sessions: ElasticSessions
@@ -56,7 +57,7 @@ interface EventGeometry {
 }
 
 export interface Cluster {
-    circle: any,
+    circle: Circle,
     attributes: ClusterAttributes
 }
 

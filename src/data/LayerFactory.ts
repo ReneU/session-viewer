@@ -196,8 +196,15 @@ const toClusters = (events: SessionEvent[]) => {
         previousSize = events.length;
         const event = events.shift()!;
         const point = event.geometry;
-        const circle = { center: point, radius: CONSTANTS.minRadius };
-        circle.center.z = event.attributes.zoom;
+        let circle = new Circle({
+            center: {
+                x: point.x,
+                y: point.y,
+                z: event.attributes.zoom,
+                spatialReference: point.spatialReference
+            },
+            radius: CONSTANTS.minRadius
+        });
         let xmin, xmax, ymin, ymax;
         xmin = xmax = point.x;
         ymin = ymax = point.y;
@@ -207,13 +214,13 @@ const toClusters = (events: SessionEvent[]) => {
             for (let i = 0; i < events.length; i++) {
                 pointCandidate = events[i].geometry as Point;
                 const pointZoom = events[i].attributes.zoom;
-                if (isInside(pointCandidate, pointZoom, new Circle(circle))) {
+                if (isInside(pointCandidate, pointZoom, circle)) {
                     events.splice(i, 1);
                     xmin = Math.min(xmin, pointCandidate.x);
                     xmax = Math.max(xmax, pointCandidate.x);
                     ymin = Math.min(ymin, pointCandidate.y);
                     ymin = Math.max(ymax, pointCandidate.y);
-                    extendClusterCircle(circle, xmin, xmax, ymin, ymax, CONSTANTS.minRadius, CONSTANTS.maxRadius);
+                    circle = extendClusterCircle(circle, xmin, xmax, ymin, ymax, CONSTANTS.minRadius, CONSTANTS.maxRadius);
                 }
             }
         }
@@ -234,10 +241,10 @@ const toSummarizedMoves = (tracks: Track[], clusters: Cluster[]) => {
         const path = track.paths[0]
         const trackAttr = track.attributes;
         const startPoint = new Point({x: path[0][0], y: path[0][1], spatialReference: track.spatialReference});
-        const startCluster = clusters.find(cluster => isInside(startPoint, trackAttr.startZoom, new Circle(cluster.circle)));
+        const startCluster = clusters.find(cluster => isInside(startPoint, trackAttr.startZoom, cluster.circle));
         if(!startCluster) return;
         const endPoint = new Point({x: path[1][0], y: path[1][1], spatialReference: track.spatialReference});
-        const endCluster = clusters.find(cluster => isInside(endPoint, trackAttr.endZoom, new Circle(cluster.circle)));
+        const endCluster = clusters.find(cluster => isInside(endPoint, trackAttr.endZoom, cluster.circle));
         if(!endCluster) return;
         let summarizedMove = summarizedMoves.find(move => isSameCluster(move.start, endCluster) && isSameCluster(startCluster, move.start));
         if(!summarizedMove) {
@@ -330,9 +337,9 @@ const isInside = (point: Point, pointZ: number, circle: Circle) => {
 };
 
 const extendClusterCircle = (circle: any, xmin: number, xmax: number, ymin: number, ymax: number, minRadius: number, maxRadius: number) => {
-    circle.center.x = (xmin + xmax) / 2;
-    circle.center.y = (ymin + ymax) / 2;
-    const { x, y, spatialReference } = circle.center;
+    const x = (xmin + xmax) / 2;
+    const y = (ymin + ymax) / 2;
+    const spatialReference = circle.center.spatialReference;
     const xExtent = getDistance(
         Object.assign({ x, y, spatialReference }, { x: xmax }),
         Object.assign({ x, y, spatialReference }, { x: xmin })
@@ -341,7 +348,8 @@ const extendClusterCircle = (circle: any, xmin: number, xmax: number, ymin: numb
         Object.assign({ x, y, spatialReference }, { y: ymax }),
         Object.assign({ x, y, spatialReference }, { y: ymin })
     );
-    circle.radius = Math.min(maxRadius, minRadius + (Math.max(xExtent, yExtent) / 2));
+    const radius = Math.min(maxRadius, minRadius + (Math.max(xExtent, yExtent) / 2));
+    return new Circle({center: {x, y, z: circle.center.z, spatialReference}, radius});
 };
 
 const isSameCluster = (first: Cluster, second: Cluster) => {
