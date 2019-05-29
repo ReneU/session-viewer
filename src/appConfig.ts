@@ -17,10 +17,6 @@ export default {
         title: "Interactions",
         id: "interaction_points"
     },
-    "characteristicsLayer": {
-        title: "Characteristic Points",
-        id: "Characteristic Points"
-    },
     "trajectoriesLayer": {
         title: "Trajectories",
         id: "trajectories"

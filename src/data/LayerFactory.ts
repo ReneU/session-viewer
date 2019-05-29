@@ -56,14 +56,6 @@ export default class LayerFactory {
         });
     }
 
-    createCharacteristicPointsLayer(appId: string) {
-        return this[appId].then((sessions: Session[]) => {
-            const {title, id} = config.characteristicsLayer;
-            const pointGraphics = toPointGraphics(sessions, characteristicsFilter);
-            return new PointLayer(PointLayer.getConstructorProps(pointGraphics, id ,title));
-        });
-    }
-
     createSummarizedMovesLayer(appId: string) {
         return this[appId].then((sessions: Session[]) => {
             const {title, id} = config.movesLayer;
@@ -271,14 +263,6 @@ const toSummarizedMoves = (tracks: Track[], clusters: Cluster[]) => {
             }
         });
     })
-}
-
-const characteristicsFilter =  (event: SessionEvent, idx: number, events: SessionEvent[]) => {
-    if(idx === 0) return true;
-    if(idx === events.length - 1) return false;
-    const eventAttr = event.attributes;
-    const nextEvent = events[idx + 1];
-    return eventAttr.lastInteractionDelay >= CONSTANTS.timeThreshold && getDistance(event.geometry, nextEvent.geometry) < CONSTANTS.maxDistance;
 }
 
 const getSymbolFromGeometry = (feature: any) => {
