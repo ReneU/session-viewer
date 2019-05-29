@@ -9,9 +9,9 @@ import {
   import Graphic from "esri/Graphic";
   
   @subclass()
-  export default class PointLayer extends declared(GeometryLayer) {
+  export default class TracksLayer extends declared(GeometryLayer) {
   
-    rendererField = "zoom";
+    rendererField = "zoomDiff";
     static fields = [
         new Field({
             name: "ObjectID",
@@ -40,37 +40,37 @@ import {
         }),
         new Field ({
             name: "elapsedSessionTime",
-            alias: "ElapsedSessionTime",
+            alias: "elapsedSessionTime",
             type: "double"
         }),
         new Field ({
             name: "totalSessionTime",
-            alias: "TotalSessionTime",
+            alias: "totalSessionTime",
             type: "double"
         }),
         new Field ({
-            name: "scale",
-            alias: "Scale",
+            name: "scaleDiff",
+            alias: "ScaleDifference",
             type: "double"
         }),
         new Field ({
-            name: "zoom",
+            name: "zoomDiff",
             alias: "Zoom",
             type: "double"
         })
     ]
     actions = [
         {
-            title: "Zoom Factor",
+            title: "Zoom Difference",
             type: "toggle",
             value: true,
-            id: "zoom"
+            id: "zoomDiff"
         },
         {
-            title: "Scale",
+            title: "Scale Difference",
             type: "toggle",
             value: false,
-            id: "scale"
+            id: "scaleDiff"
         },
         {
             title: "Interaction Count",
@@ -98,15 +98,15 @@ import {
         }
         ];
 
-    static getConstructorProps (pointGraphics: Graphic[], id: string, title: string) {
+    static getConstructorProps (polylineGraphics: Graphic[], id: string, title: string) {
         const source = new Collection();
-        source.addMany(pointGraphics)
+        source.addMany(polylineGraphics)
         return {
             id,
             title,
             source,
             visible: false,
-            fields: PointLayer.fields,
+            fields: PoylineLayer.fields,
             objectIdField: "ObjectID"
         }
     }

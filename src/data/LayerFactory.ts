@@ -1,8 +1,8 @@
 import {EsResponse, EsSession, EsEvent, SessionEvent, Session, Cluster, Move, Track} from "./DataInterfaces";
 import ElasticsearchStore from './ElasticsearchStore';
 import FeatureLayer from 'esri/layers/FeatureLayer';
-import PolylineLayer from './PolylineLayer';
-import PointLayer from './PointLayer';
+import TracksLayer from './TracksLayer';
+import InteractionsLayer from './InteractionsLayer';
 import config from "../appConfig";
 
 import SpatialReference from 'esri/geometry/SpatialReference';
@@ -52,7 +52,7 @@ export default class LayerFactory {
         return this[appId].then((sessions: Session[]) => {
             const {title, id} = config.interactionLayer;
             const pointGraphics = toPointGraphics(sessions);
-            return new PointLayer(PointLayer.getConstructorProps(pointGraphics, id, title));
+            return new InteractionsLayer(InteractionsLayer.getConstructorProps(pointGraphics, id, title));
         });
     }
 
@@ -87,7 +87,7 @@ export default class LayerFactory {
             const trajectories = toPolylines(sessions);
             const {title, id} = config.trajectoriesLayer;
             const polylineGraphics = toGraphics(trajectories);
-            return new PolylineLayer(PolylineLayer.getConstructorProps(polylineGraphics, id, title));
+            return new TracksLayer(TracksLayer.getConstructorProps(polylineGraphics, id, title));
         });
     }
 }
@@ -247,19 +247,24 @@ const toSummarizedMoves = (tracks: Track[], clusters: Cluster[]) => {
         }
     });
     return summarizedMoves.map(move => {
+        const { start, end, count } = move;
         return new Graphic({
             geometry: {
                 type: 'polyline',
                 paths: [
-                    [move.start.circle.center.x, move.start.circle.center.y, move.start.circle.center.z],
-                    [move.end.circle.center.x, move.end.circle.center.y, move.end.circle.center.z]
+                    [start.circle.center.x, start.circle.center.y, start.circle.center.z],
+                    [end.circle.center.x, end.circle.center.y, end.circle.center.z]
                 ],
-                spatialReference: move.start.circle.center.spatialReference
+                spatialReference: start.circle.center.spatialReference
+            },
+            attributes: {
+                zoomDiff: end.attributes.zoom - start.attributes.zoom,
+                scaleDiff: end.attributes.scale - start.attributes.scale
             },
             symbol: {
                 type: 'simple-line',
                 color: [255, 127, 0],
-                width: move.count
+                width: count
             }
         });
     })
