@@ -82,7 +82,6 @@ export default class HistogramSlider extends declared(Accessor) {
       })
       .then(histogram => {
         sliderParams.histogram = histogram;
-
         this.updateSlider(sliderParams);
       })
       .catch(function(error) {
@@ -100,7 +99,7 @@ export default class HistogramSlider extends declared(Accessor) {
     const slider = this.slider = new ColorSlider(sliderParams);
     const label = document.getElementById(`${nodeId}-header`);
     if(label){
-      label.innerText = layer.rendererField;
+      label.innerText = layer.fields.find(field => field.name === layer.rendererField)!.alias;
     }
     this.onWidgetReady()
 
