@@ -38,8 +38,8 @@ export default class App extends declared(Widget) {
   private mapRight: EsriMap;
   private viewLeft: MapView;
   private viewRight: MapView;
-  private layerLeft: FeatureLayer;
-  private layerRight: FeatureLayer;
+  private layerLeft: GeometryLayer;
+  private layerRight: GeometryLayer;
   private sliderLeft: HistogramSlider;
   private sliderRight: HistogramSlider;
 
@@ -72,14 +72,14 @@ export default class App extends declared(Widget) {
     dataProvider.createSummarizedMovesLayer(appIds[0]).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
     dataProvider.createSessionTracksLayer(appIds[0]).then((layer: GeometryLayer) => this.mapLeft.add(layer));
     const layerLeftReady = dataProvider.createInteractionPointsLayer(appIds[0])
-      .then((layer: FeatureLayer) => {
+      .then((layer: GeometryLayer) => {
         this.mapLeft.add(layer);
         this.layerLeft = layer;
       });
     dataProvider.createSummarizedMovesLayer(appIds[1]).then((layer: GraphicsLayer) => this.mapRight.add(layer));
     dataProvider.createSessionTracksLayer(appIds[1]).then((layer: GeometryLayer) => this.mapRight.add(layer));
     const layerRightReady = dataProvider.createInteractionPointsLayer(appIds[1])
-      .then((layer: FeatureLayer) => {
+      .then((layer: GeometryLayer) => {
         this.mapRight.add(layer);
         this.layerRight = layer;
       });
@@ -124,16 +124,13 @@ export default class App extends declared(Widget) {
     this.sliderRight = this.initializeHistogramSlider({layer: this.layerRight, view: this.viewRight, position: "right"});
   }
 
-  private initializeHistogramSlider({view, layer, position}: {view: MapView, layer: FeatureLayer, position: string}){
+  private initializeHistogramSlider({view, layer, position}: {view: MapView, layer: GeometryLayer, position: string}){
     const nodeId = `slider-${position}`;
     const viewPosition = `bottom-${position}`;
     const slider = new HistogramSlider({layer, view, nodeId});
     slider.onWidgetReady = () => {
       view.ui.add(nodeId + "-container", viewPosition);
     };
-    slider.onRendererChange = renderer => {
-      layer.renderer = renderer;
-    }
     slider.visible = layer.visible;
     return slider;
   }
