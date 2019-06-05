@@ -126,10 +126,9 @@ export default class App extends declared(Widget) {
 
   private initializeHistogramSlider({view, layer, position}: {view: MapView, layer: GeometryLayer, position: string}){
     const nodeId = `slider-${position}`;
-    const viewPosition = `bottom-${position}`;
     const slider = new HistogramSlider({layer, view, nodeId});
     slider.onWidgetReady = () => {
-      view.ui.add(nodeId + "-container", viewPosition);
+      view.ui.add(nodeId + "-container", "bottom-left");
     };
     slider.visible = layer.visible;
     return slider;
