@@ -96,12 +96,11 @@ const parseElasticResponse = (response: EsResponse) => {
         const events = esSession.events.hits.hits;
         const sessionId = esSession.key;
         let sessionStartDate: number;
-        const totalSessionTime = events.reduce((totalTime: number, event: EsEvent) => {
+        const totalSessionTime = events.reduce((totalTime: number, event: EsEvent, idx: number) => {
             const eventProps = event._source;
-            if (!sessionStartDate) {
-                sessionStartDate = eventProps.timestamp;
-            }
-            return (eventProps.timestamp - sessionStartDate) / 1000 + totalTime;
+            if (!idx) return 0;
+            const prevEventProps = events[idx - 1]._source;
+            return totalTime + ((eventProps.timestamp - prevEventProps.timestamp) / 1000)
         }, 0);
         const session = {id: sessionId, events: []};
         session.events = events.map((event: EsEvent, idx: number) => {
