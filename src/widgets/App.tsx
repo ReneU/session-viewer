@@ -9,7 +9,6 @@ import {
 import { tsx } from "esri/widgets/support/widget";
 import {watch, whenTrue} from "esri/core/watchUtils";
 import GraphicsLayer from "esri/layers/GraphicsLayer";
-import FeatureLayer from "esri/layers/FeatureLayer";
 import MapView from "esri/views/MapView";
 import Widget from "esri/widgets/Widget";
 import EsriMap from "esri/Map";
