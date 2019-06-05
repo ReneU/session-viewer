@@ -29,6 +29,12 @@ export default class HistogramSlider extends declared(Accessor) {
     this.updateFieldWatcher(layer);
     this.render();
   }
+  @property({value: "high-to-low"})
+  set theme(theme: string) {
+    if(theme === this.theme) return;
+    this._set("theme", theme);
+    this.render();
+  }
 
   private view: MapView;
   private nodeId: string;
@@ -41,6 +47,11 @@ export default class HistogramSlider extends declared(Accessor) {
     this._set("layer", layer);
     this.view = params.view;
     this.nodeId = params.nodeId;
+    const selectElement = document.getElementById(params.nodeId + "-select")! as HTMLSelectElement;
+    this.theme = selectElement.value;
+    selectElement.onchange = () => {
+      this.theme = selectElement.value;
+    };
     this.render();
     this.updateFieldWatcher(layer);
   }
@@ -54,7 +65,7 @@ export default class HistogramSlider extends declared(Accessor) {
 
   private render(){
     const basemap = appConfig.basemap;
-    const theme = "high-to-low";
+    const theme = this.theme;
     const view = this.view;
     const layer = this.layer;
     const field = layer.rendererField;
@@ -72,14 +83,14 @@ export default class HistogramSlider extends declared(Accessor) {
       .then(histogram => {
         sliderParams.histogram = histogram;
 
-        this.updateSlider(sliderParams, theme);
+        this.updateSlider(sliderParams);
       })
       .catch(function(error) {
         console.log("there was an error: ", error);
       });
   }
 
-  private updateSlider(sliderParams: any, theme: string){
+  private updateSlider(sliderParams: any){
     const layer = this.layer;
     const nodeId = this.nodeId;
     this.destroySlider();
@@ -89,7 +100,7 @@ export default class HistogramSlider extends declared(Accessor) {
     const slider = this.slider = new ColorSlider(sliderParams);
     const label = document.getElementById(`${nodeId}-header`);
     if(label){
-      label.innerText = layer.rendererField + " (" + theme + ")";
+      label.innerText = layer.rendererField;
     }
     this.onWidgetReady()
 
