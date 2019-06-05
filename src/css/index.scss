@@ -59,6 +59,7 @@ header.top-nav {
 #slider-right-header,
 #slider-left-header,
 .esri-top-label-node>span,
+.esri-bottom-label-node>span,
 .esri-handle-label-span,
 .webmap-header {
   color: $white;
@@ -125,6 +126,16 @@ header.top-nav {
 #slider-right-header,
 #slider-left-header {
   font-size: 14px;
+}
+
+#slider-right-select,
+#slider-left-select {
+  font-family: "Avenir Next W00", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  border-color: $black;
+  background: $black;
+  color: $white;
+  border-radius: 3px;
 }
 
 .main {
