@@ -121,6 +121,7 @@ export default class App extends declared(Widget) {
   private initializeHistogramSliders() {
     this.sliderLeft = this.initializeHistogramSlider({layer: this.layerLeft, view: this.viewLeft, position: "left"});
     this.sliderRight = this.initializeHistogramSlider({layer: this.layerRight, view: this.viewRight, position: "right"});
+    this.syncHistogramSliderThemes(this.sliderLeft, this.sliderRight);
   }
 
   private initializeHistogramSlider({view, layer, position}: {view: MapView, layer: GeometryLayer, position: string}){
@@ -132,6 +133,11 @@ export default class App extends declared(Widget) {
     };
     slider.visible = layer.visible;
     return slider;
+  }
+
+  private syncHistogramSliderThemes(first: HistogramSlider, second: HistogramSlider) {
+    first.watch("theme", theme => second.theme = theme);
+    second.watch("theme", theme => first.theme = theme);
   }
 
   private synchronizeMaps() {
