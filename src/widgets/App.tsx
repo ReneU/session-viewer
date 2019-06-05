@@ -69,14 +69,12 @@ export default class App extends declared(Widget) {
     const dataProvider = new LayerFactory(appIds);
 
     dataProvider.createSummarizedMovesLayer(appIds[0]).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
-    dataProvider.createSessionTracksLayer(appIds[0]).then((layer: GeometryLayer) => this.mapLeft.add(layer));
     const layerLeftReady = dataProvider.createInteractionPointsLayer(appIds[0])
       .then((layer: GeometryLayer) => {
         this.mapLeft.add(layer);
         this.layerLeft = layer;
       });
     dataProvider.createSummarizedMovesLayer(appIds[1]).then((layer: GraphicsLayer) => this.mapRight.add(layer));
-    dataProvider.createSessionTracksLayer(appIds[1]).then((layer: GeometryLayer) => this.mapRight.add(layer));
     const layerRightReady = dataProvider.createInteractionPointsLayer(appIds[1])
       .then((layer: GeometryLayer) => {
         this.mapRight.add(layer);

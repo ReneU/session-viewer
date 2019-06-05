@@ -34,11 +34,6 @@ import {
             type: "double"
         }),
         new Field ({
-            name: "lastInteractionDelay",
-            alias: "LastInteractionDelay",
-            type: "double"
-        }),
-        new Field ({
             name: "elapsedSessionTime",
             alias: "ElapsedSessionTime",
             type: "double"
@@ -89,12 +84,6 @@ import {
             type: "toggle",
             value: false,
             id: "totalSessionTime"
-        },
-        {
-            title: "Time since last Interaction (s)",
-            type: "toggle",
-            value: false,
-            id: "lastInteractionDelay"
         }
         ];
 
@@ -105,7 +94,6 @@ import {
             id,
             title,
             source,
-            visible: false,
             fields: InteractionsLayer.fields,
             objectIdField: "ObjectID"
         }

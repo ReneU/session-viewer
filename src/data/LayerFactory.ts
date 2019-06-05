@@ -1,7 +1,6 @@
 import {EsResponse, EsSession, EsEvent, SessionEvent, Session, Cluster, Move, Track} from "./DataInterfaces";
 import ElasticsearchStore from './ElasticsearchStore';
 import FeatureLayer from 'esri/layers/FeatureLayer';
-import TracksLayer from './TracksLayer';
 import InteractionsLayer from './InteractionsLayer';
 import config from "../appConfig";
 
@@ -10,7 +9,6 @@ import geometryEngine from "esri/geometry/geometryEngine";
 import { Point } from 'esri/geometry';
 import Graphic from "esri/Graphic";
 import Circle from 'esri/geometry/Circle';
-import GraphicsLayer from 'esri/layers/GraphicsLayer';
 import MovesLayer from './MovesLayer';
 
 const CONSTANTS = {
@@ -78,15 +76,6 @@ export default class LayerFactory {
             const summarizedMoves = toSummarizedMoves(trajectories, clusters);
             console.log(appId + " - summarizedMoves - " + summarizedMoves.length);
             return new MovesLayer(MovesLayer.getConstructorProps(summarizedMoves, id, title));
-        });
-    }
-
-    createSessionTracksLayer(appId: string){
-        return this[appId].then((sessions: Session[]) => {
-            const trajectories = toPolylines(sessions);
-            const {title, id} = config.trajectoriesLayer;
-            const polylineGraphics = toGraphics(trajectories);
-            return new TracksLayer(TracksLayer.getConstructorProps(polylineGraphics, id, title));
         });
     }
 }
@@ -268,48 +257,6 @@ const toSummarizedMoves = (tracks: Track[], clusters: Cluster[]) => {
         });
     })
 }
-
-const getSymbolFromGeometry = (feature: any) => {
-    const width = 2;
-    const size = 10;
-    switch (feature.type) {
-        case 'polygon':
-        return {
-            type: 'simple-fill',
-            color: [77, 175, 74, 0.5],
-            outline: {
-                color: [255, 255, 255],
-                width: 1
-            }
-        };
-        case 'point':
-        return {
-            type: 'simple-marker',
-            color: [55, 126, 184],
-            size,
-            outline: {
-                color: [0, 0, 0],
-                width: 1
-            }
-        };
-        case 'polyline':
-        return {
-            type: 'simple-line',
-            color: [255, 127, 0],
-            width
-        };
-    }
-};
-    
-const toGraphics = (geometry: any) => {
-    return geometry.map((geometry: any) => {
-        return new Graphic({
-        geometry: geometry,
-        attributes: geometry.attributes,
-        symbol: getSymbolFromGeometry(geometry)
-        });
-    });
-};
 
 const getDistance = (source: any, destination: any, esriUnit = 'meters') => {
     source = new Point(source);

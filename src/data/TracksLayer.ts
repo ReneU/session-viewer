@@ -34,11 +34,6 @@ export default class TracksLayer extends declared(GeometryLayer) {
             type: "double"
         }),
         new Field ({
-            name: "lastInteractionDelay",
-            alias: "LastInteractionDelay",
-            type: "double"
-        }),
-        new Field ({
             name: "elapsedSessionTime",
             alias: "elapsedSessionTime",
             type: "double"
@@ -89,12 +84,6 @@ export default class TracksLayer extends declared(GeometryLayer) {
             type: "toggle",
             value: false,
             id: "totalSessionTime"
-        },
-        {
-            title: "Time since last Interaction (s)",
-            type: "toggle",
-            value: false,
-            id: "lastInteractionDelay"
         }
         ];
 
