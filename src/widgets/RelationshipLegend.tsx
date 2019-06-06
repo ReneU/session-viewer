@@ -60,6 +60,7 @@ export default class RelationshipLegend extends declared(Accessor) {
       layer,
       view: this.view,
       basemap: appConfig.basemap,
+      numClasses: 2,
       field1: {
         field: "zoom"
       },
