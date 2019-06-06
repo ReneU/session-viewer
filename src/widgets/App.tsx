@@ -18,6 +18,7 @@ import HistogramSlider from "./HistogramSlider";
 import TableOfContents from './TableOfContents';
 import LayerFactory from '../data/LayerFactory';
 import GeometryLayer from '../data/GeometryLayer';
+import RelationshipLegend from './RelationshipLegend';
 
 interface AppViewParams extends esri.WidgetProperties {}
 
@@ -41,6 +42,7 @@ export default class App extends declared(Widget) {
   private layerRight: GeometryLayer;
   private sliderLeft: HistogramSlider;
   private sliderRight: HistogramSlider;
+  private legend: RelationshipLegend;
 
   constructor(params: AppViewParams) {
     super(params);
@@ -111,9 +113,25 @@ export default class App extends declared(Widget) {
   }
 
   private onViewsReady(){
+    this.initializeRelationshipLegend(this.viewRight);
     this.initializeHistogramSliders();
     this.synchronizeMaps();
     this.synchronizeViews();
+  }
+
+  private initializeRelationshipLegend(view: MapView) {
+    const legend = new RelationshipLegend({view});
+    if(legend.visible) {
+      view.ui.add(legend.widget, "top-right");
+    }
+    legend.watch("visible", visible => {
+      if(!visible) {
+        view.ui.remove(legend.widget);
+        return;
+      }
+      view.ui.add(legend.widget, "top-right");
+    });
+    this.legend = legend;
   }
 
   private initializeHistogramSliders() {
@@ -159,7 +177,7 @@ export default class App extends declared(Widget) {
             targetLayer.visible = targetLayer.id === layer.id;
           });
         }
-        this.updateSlider(sourceMap, sourceSlider);
+        this.updateUI(sourceMap, sourceSlider);
       });
 
       // sync rendererField of interaction layers
@@ -172,11 +190,12 @@ export default class App extends declared(Widget) {
     });
   }
 
-  private updateSlider(map: EsriMap, slider: HistogramSlider){
-      const visibleLayer = map.layers.find(layer => layer.visible && layer instanceof GeometryLayer);
+  private updateUI(map: EsriMap, slider: HistogramSlider){
+      const visibleLayer = map.layers.find(layer => layer.visible && layer instanceof GeometryLayer) as GeometryLayer;
       if(!visibleLayer) return;
       slider.visible = true;
-      slider.layer = visibleLayer as GeometryLayer;
+      slider.layer = visibleLayer;
+      this.legend.layer = visibleLayer;
   }
 
   private synchronizeViews () {
