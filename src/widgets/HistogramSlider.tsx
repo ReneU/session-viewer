@@ -33,6 +33,7 @@ export default class HistogramSlider extends declared(Accessor) {
   set theme(theme: string) {
     if(theme === this.theme) return;
     this._set("theme", theme);
+    this.selectNode.value = theme;
     this.render();
   }
 
@@ -40,6 +41,7 @@ export default class HistogramSlider extends declared(Accessor) {
   private nodeId: string;
   private slider: ColorSlider;
   private fieldWatchHandle: any;
+  private selectNode: HTMLSelectElement;
 
   constructor(params: HistogramSliderParams){
     super();
@@ -47,7 +49,7 @@ export default class HistogramSlider extends declared(Accessor) {
     this._set("layer", layer);
     this.view = params.view;
     this.nodeId = params.nodeId;
-    const selectElement = document.getElementById(params.nodeId + "-select")! as HTMLSelectElement;
+    const selectElement = this.selectNode = document.getElementById(params.nodeId + "-select")! as HTMLSelectElement;
     this.theme = selectElement.value;
     selectElement.onchange = () => {
       this.theme = selectElement.value;
