@@ -88,9 +88,8 @@ export default class HistogramSlider extends declared(Accessor) {
     const layer = this.layer;
     const nodeId = this.nodeId;
     this.destroySlider();
-    const container = d_construct.create("div", { id: nodeId });
-    d_construct.place(container, `${nodeId}-container`);
-    sliderParams.container = container;
+    sliderParams.container = this.getSliderNode(nodeId);
+    document.getElementById(`${nodeId}-container`)!.style.display = "block"
     const slider = this.slider = new ColorSlider(sliderParams);
     const label = document.getElementById(`${nodeId}-header`);
     if(label){
@@ -103,6 +102,14 @@ export default class HistogramSlider extends declared(Accessor) {
       renderer.visualVariables = [visualVariable];
       layer.renderer = renderer;
     });
+  }
+
+  private getSliderNode(nodeId: string) {
+    let node = document.getElementById(nodeId)!;
+    if (node) return node;
+    node = d_construct.create("div", { id: nodeId });
+    d_construct.place(node, `${nodeId}-container`);
+    return node;
   }
 
   private destroySlider(){
