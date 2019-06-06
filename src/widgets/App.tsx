@@ -38,7 +38,8 @@ export default class App extends declared(Widget) {
   private viewRight: MapView;
   private sliderLeft: HistogramSlider;
   private sliderRight: HistogramSlider;
-  private legend: RelationshipLegend;
+  private legendLeft: RelationshipLegend;
+  private legendRight: RelationshipLegend;
 
   constructor(params: AppViewParams) {
     super(params);
@@ -59,7 +60,7 @@ export default class App extends declared(Widget) {
     layerFactory.createSummarizedMovesLayer(appIds[1]).then((layer: GraphicsLayer) => mapRight.add(layer));
     layerFactory.createInteractionPointsLayer(appIds[1]).then((layer: GeometryLayer) => mapRight.add(layer));
     Promise.all([leftView.when(), rightView.when()]).then(() => {
-      this.initializeRelationshipLegend(leftView);
+      this.initializeRelationshipLegends(leftView, rightView);
       this.initializeHistogramSliders(leftView, rightView);
       this.synchronizeMaps(leftView, rightView);
       this.synchronizeViews(leftView, rightView);
@@ -103,19 +104,24 @@ export default class App extends declared(Widget) {
     this.viewRight.container = element;
   }
 
-  private initializeRelationshipLegend(view: MapView) {
+  private initializeRelationshipLegends(leftView: MapView, rightView: MapView) {
+    this.legendLeft = this.initializeRelationshipLegend(leftView);
+    this.legendRight = this.initializeRelationshipLegend(rightView);
+  }
+
+  private initializeRelationshipLegend(view: MapView){
     const legend = new RelationshipLegend({view});
     if(legend.visible) {
-      view.ui.add(legend.widget, "top-right");
+      view.ui.add(legend.widget, "bottom-left");
     }
     legend.watch("visible", visible => {
       if(!visible) {
         view.ui.remove(legend.widget);
         return;
       }
-      view.ui.add(legend.widget, "top-right");
+      view.ui.add(legend.widget, "bottom-left");
     });
-    this.legend = legend;
+    return legend;
   }
 
   private initializeHistogramSliders(leftView: MapView, rightView: MapView) {
@@ -141,11 +147,11 @@ export default class App extends declared(Widget) {
   private synchronizeMaps(leftView: MapView, rightView: MapView) {
     const mapLeft = leftView.map;
     const mapRight = rightView.map;
-    this.synchronizeLayers(mapLeft, this.sliderLeft, mapRight);
-    this.synchronizeLayers(mapRight, this.sliderRight, mapLeft);
+    this.synchronizeLayers(mapLeft, mapRight, this.sliderLeft, this.legendLeft);
+    this.synchronizeLayers(mapRight, mapLeft, this.sliderRight, this.legendRight);
   }
 
-  private synchronizeLayers(sourceMap: EsriMap, sourceSlider: HistogramSlider, targetMap: EsriMap) {
+  private synchronizeLayers(sourceMap: EsriMap, targetMap: EsriMap, sourceSlider: HistogramSlider, sourceLegend: RelationshipLegend) {
     sourceMap.allLayers.forEach(layer => {
       // sync visibility of all layers
       layer.watch("visible", visible => {
@@ -160,7 +166,7 @@ export default class App extends declared(Widget) {
             targetLayer.visible = targetLayer.id === layer.id;
           });
         }
-        this.updateUI(sourceMap, sourceSlider);
+        this.updateUI(sourceMap, sourceSlider, sourceLegend);
       });
 
       // sync rendererField of interaction layers
@@ -173,10 +179,10 @@ export default class App extends declared(Widget) {
     });
   }
 
-  private updateUI(map: EsriMap, slider: HistogramSlider){
+  private updateUI(map: EsriMap, slider: HistogramSlider, legend: RelationshipLegend){
       const visibleLayer = map.layers.find(layer => layer.visible && layer instanceof GeometryLayer) as GeometryLayer;
       slider.layer = visibleLayer;
-      this.legend.layer = visibleLayer;
+      legend.layer = visibleLayer;
   }
 
   private synchronizeViews (leftView: MapView, rightView: MapView) {
