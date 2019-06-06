@@ -11,10 +11,10 @@ import Field = require('esri/layers/support/Field');
   export default class GeometryLayer extends declared(FeatureLayer) {
   
     @property()
-    rendererField: string = "";
+    rendererFields: string[] = [];
   
     @property()
-    actions: Action[] = [];
+    actions: Action[][] = [];
   
     @property()
     static fields: Field[] = [];

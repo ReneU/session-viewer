@@ -11,7 +11,7 @@ import {
   @subclass("esri.layers.FeatureLayer")
   export default class InteractionsLayer extends declared(GeometryLayer) {
   
-    rendererField = "zoom";
+    rendererFields = ["zoom"];
     static fields = [
         new Field({
             name: "ObjectID",
@@ -70,55 +70,59 @@ import {
         })
     ]
     actions = [
-        {
-            title: "Zoom Factor",
-            type: "toggle",
-            value: true,
-            id: "zoom"
-        },
-        {
-            title: "Scale",
-            type: "toggle",
-            value: false,
-            id: "scale"
-        },
-        {
-            title: "Interaction Count",
-            type: "toggle",
-            value: false,
-            id: "interactionCount"
-        },
-        {
-            title: "Time since Session-Start (s)",
-            type: "toggle",
-            value: false,
-            id: "elapsedSessionTime"
-        },
-        {
-            title: "Total Session-Time (s)",
-            type: "toggle",
-            value: false,
-            id: "totalSessionTime"
-        },
-        {
-            title: "Pragmatic Quality + Zoom Relationship",
-            type: "toggle",
-            value: false,
-            id: "pragmaticQualityZoomRelationship"
-        },
-        {
-            title: "Hedonic Quality",
-            type: "toggle",
-            value: false,
-            id: "hedonicQuality"
-        },
-        {
-            title: "Overall Experience",
-            type: "toggle",
-            value: false,
-            id: "overallExperience"
-        }
-        ];
+        [
+            {
+                title: "Zoom Factor",
+                type: "toggle",
+                value: true,
+                id: "zoom"
+            },
+            {
+                title: "Scale",
+                type: "toggle",
+                value: false,
+                id: "scale"
+            },
+            {
+                title: "Interaction Count",
+                type: "toggle",
+                value: false,
+                id: "interactionCount"
+            },
+            {
+                title: "Time since Session-Start (s)",
+                type: "toggle",
+                value: false,
+                id: "elapsedSessionTime"
+            },
+            {
+                title: "Total Session-Time (s)",
+                type: "toggle",
+                value: false,
+                id: "totalSessionTime"
+            }
+        ],
+        [
+            {
+                title: "Pragmatic Quality",
+                type: "toggle",
+                value: false,
+                id: "pragmaticQuality"
+            },
+            {
+                title: "Hedonic Quality",
+                type: "toggle",
+                value: false,
+                id: "hedonicQuality"
+            },
+            {
+                title: "Overall Experience",
+                type: "toggle",
+                value: false,
+                id: "overallExperience"
+            }
+        ]
+    ];
 
     static getConstructorProps (pointGraphics: Graphic[], id: string, title: string) {
         const source = new Collection();

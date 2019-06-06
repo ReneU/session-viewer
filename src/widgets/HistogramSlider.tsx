@@ -26,7 +26,7 @@ export default class HistogramSlider extends declared(Accessor) {
     this.updateVisibility();
     if(!layer) return;
     this.render();
-    this.fieldWatchHandle = layer.watch("rendererField", () => {
+    this.fieldWatchHandle = layer.watch("rendererFields", () => {
       this.updateVisibility();
       this.render();
     });
@@ -62,7 +62,7 @@ export default class HistogramSlider extends declared(Accessor) {
     const view = this.view;
     const theme = this.theme;
     const layer = this.layer;
-    const field = layer.rendererField;
+    const field = layer.rendererFields[0];
     const basemap = appConfig.basemap;
     let colorParams = { view, theme, layer, field, basemap };
 
@@ -94,7 +94,7 @@ export default class HistogramSlider extends declared(Accessor) {
     const slider = this.slider = new ColorSlider(sliderParams);
     const label = document.getElementById(`${nodeId}-header`);
     if(label){
-      label.innerText = layer.fields.find(field => field.name === layer.rendererField)!.alias;
+      label.innerText = layer.fields.find(field => field.name === layer.rendererFields[0])!.alias;
     }
 
     slider.on("data-change", () => {
@@ -114,7 +114,7 @@ export default class HistogramSlider extends declared(Accessor) {
 
   private updateVisibility(){
     const layer = this.layer;
-    this.visible = layer && !layer.rendererField.toLowerCase().includes("relationship");
+    this.visible = layer && layer.rendererFields.length === 1;
   }
 }
 

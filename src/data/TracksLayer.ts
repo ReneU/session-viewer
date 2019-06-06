@@ -11,7 +11,7 @@ import Graphic from "esri/Graphic";
 @subclass()
 export default class TracksLayer extends declared(GeometryLayer) {
   
-    rendererField = "zoomDiff";
+    rendererFields = ["zoomDiff"];
     static fields = [
         new Field({
             name: "ObjectID",
@@ -55,37 +55,39 @@ export default class TracksLayer extends declared(GeometryLayer) {
         })
     ]
     actions = [
-        {
-            title: "Zoom Difference",
-            type: "toggle",
-            value: true,
-            id: "zoomDiff"
-        },
-        {
-            title: "Scale Difference",
-            type: "toggle",
-            value: false,
-            id: "scaleDiff"
-        },
-        {
-            title: "Interaction Count",
-            type: "toggle",
-            value: false,
-            id: "interactionCount"
-        },
-        {
-            title: "Time since Session-Start (s)",
-            type: "toggle",
-            value: false,
-            id: "elapsedSessionTime"
-        },
-        {
-            title: "Total Session-Time (s)",
-            type: "toggle",
-            value: false,
-            id: "totalSessionTime"
-        }
-        ];
+        [
+            {
+                title: "Zoom Difference",
+                type: "toggle",
+                value: true,
+                id: "zoomDiff"
+            },
+            {
+                title: "Scale Difference",
+                type: "toggle",
+                value: false,
+                id: "scaleDiff"
+            },
+            {
+                title: "Interaction Count",
+                type: "toggle",
+                value: false,
+                id: "interactionCount"
+            },
+            {
+                title: "Time since Session-Start (s)",
+                type: "toggle",
+                value: false,
+                id: "elapsedSessionTime"
+            },
+            {
+                title: "Total Session-Time (s)",
+                type: "toggle",
+                value: false,
+                id: "totalSessionTime"
+            }
+        ]
+    ];
 
     static getConstructorProps (polylineGraphics: Graphic[], id: string, title: string) {
         const source = new Collection();

@@ -11,7 +11,7 @@ import Graphic from "esri/Graphic";
 @subclass()
 export default class MovesLayer extends declared(GeometryLayer) {
 
-    rendererField = "zoomDiff";
+    rendererFields = ["zoomDiff"];
     static fields = [
         new Field({
             name: "ObjectID",
@@ -35,25 +35,27 @@ export default class MovesLayer extends declared(GeometryLayer) {
         })
     ]
     actions = [
-        {
-            title: "Zoom Difference",
-            type: "toggle",
-            value: true,
-            id: "zoomDiff"
-        },
-        {
-            title: "Scale Difference",
-            type: "toggle",
-            value: false,
-            id: "scaleDiff"
-        },
-        {
-            title: "Interaction Count",
-            type: "toggle",
-            value: false,
-            id: "interactionCount"
-        }
-        ];
+        [
+            {
+                title: "Zoom Difference",
+                type: "toggle",
+                value: true,
+                id: "zoomDiff"
+            },
+            {
+                title: "Scale Difference",
+                type: "toggle",
+                value: false,
+                id: "scaleDiff"
+            },
+            {
+                title: "Interaction Count",
+                type: "toggle",
+                value: false,
+                id: "interactionCount"
+            }
+        ]
+    ];
 
     static getConstructorProps (polylineGraphics: Graphic[], id: string, title: string) {
         const source = new Collection();

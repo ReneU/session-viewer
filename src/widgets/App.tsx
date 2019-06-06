@@ -177,12 +177,12 @@ export default class App extends declared(Widget) {
         this.updateUI(sourceMap, sourceSlider, sourceLegend);
       });
 
-      // sync rendererField of interaction layers
-      layer.watch("rendererField", value => {
+      // sync rendererFields of interaction layers
+      layer.watch("rendererFields", value => {
         const interactionLayer = targetMap.layers.find(targetLayer => {
           return targetLayer.id === layer.id;
         }) as GeometryLayer;
-        interactionLayer.rendererField = value;
+        interactionLayer.rendererFields = value;
       })
     });
   }

@@ -6,6 +6,7 @@ import {createRenderer} from "esri/renderers/smartMapping/creators/relationship"
 import { declared, property, subclass } from "esri/core/accessorSupport/decorators";
 
 import appConfig from '../appConfig';
+import { UniqueValueRenderer } from 'esri/renderers';
 
 @subclass("app.widgets.RelationshipLegend")
 export default class RelationshipLegend extends declared(Accessor) {
@@ -41,7 +42,7 @@ export default class RelationshipLegend extends declared(Accessor) {
     const layer = this.layer;
     this.updateVisibility();
     if(!layer) return;
-    this.fieldWatchHandle = layer.watch("rendererField", field => {
+    this.fieldWatchHandle = layer.watch("rendererFields", () => {
       this.updateVisibility();
       this.updateRenderer();
     });
@@ -56,16 +57,18 @@ export default class RelationshipLegend extends declared(Accessor) {
   private updateRenderer(){
     if(!this.visible) return;
     const layer = this.layer;
+    const field1 = this.layer.fields.find(field => field.name === layer.rendererFields[0])!;
+    const field2 = this.layer.fields.find(field => field.name === layer.rendererFields[1])!;
     const params = {
       layer,
       view: this.view,
       basemap: appConfig.basemap,
       numClasses: 2,
       field1: {
-        field: "zoom"
+        field: field1.name
       },
       field2: {
-        field: "pragmaticQuality"
+        field: field2.name
       },
       focus: "HH",
       defaultSymbolEnabled: false
@@ -73,7 +76,24 @@ export default class RelationshipLegend extends declared(Accessor) {
     
     createRenderer(params)
       .then(function(response){
+        const renderer = response.renderer as UniqueValueRenderer;
         layer.renderer = response.renderer;
+        renderer.uniqueValueInfos.forEach(info => {
+          switch (info.value) {
+            case "HH":
+              info.label = `High ${field1.alias}, High ${field2.alias}`;
+              break;
+            case "HL":
+              info.label = `High ${field1.alias}, Low ${field2.alias}`;
+              break;
+            case "LH":
+              info.label = `Low ${field1.alias}, High ${field2.alias}`;
+              break;
+            case "LL":
+              info.label = `Low ${field1.alias}, Low ${field2.alias}`;
+              break;
+          }
+        });
       })
       .catch(function(error) {
         console.log("there was an error: ", error);
@@ -82,7 +102,7 @@ export default class RelationshipLegend extends declared(Accessor) {
 
   private updateVisibility(){
     const layer = this.layer;
-    this.visible = layer && layer.rendererField.toLowerCase().includes("relationship");
+    this.visible = layer && layer.rendererFields.length === 2;
   }
 }
 
