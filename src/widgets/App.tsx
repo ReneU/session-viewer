@@ -133,9 +133,17 @@ export default class App extends declared(Widget) {
   private initializeHistogramSlider({view, position}: {view: MapView, position: string}){
     const nodeId = `slider-${position}`;
     const slider = new HistogramSlider({view, nodeId});
-    slider.onWidgetReady = () => {
-      view.ui.add(nodeId + "-container", "bottom-left");
-    };
+    const node = document.getElementById(nodeId + "-container")!;
+    if(slider.visible) {
+      view.ui.add(node, "bottom-left");
+    }
+    slider.watch("visible", visible => {
+      if(!visible) {
+        view.ui.remove(node);
+        return;
+      }
+      view.ui.add(node, "bottom-left");
+    });
     return slider;
   }
 

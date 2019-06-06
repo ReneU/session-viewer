@@ -14,16 +14,7 @@ import appConfig from '../appConfig';
 @subclass("app.widgets.HistogramSlider")
 export default class HistogramSlider extends declared(Accessor) {
 
-  @property() onWidgetReady: () => void;
-
-  @property({value: false})
-  set visible(visible: boolean) {
-    this._set("visible", visible);
-    const container = document.getElementById(this.nodeId + "-container");
-    if(container) {
-      container.style.visibility = visible ? "visible" : "hidden";
-    }
-  }
+  @property() visible: boolean = false;
 
   @property()
   set layer(layer: GeometryLayer) {
@@ -105,7 +96,6 @@ export default class HistogramSlider extends declared(Accessor) {
     if(label){
       label.innerText = layer.fields.find(field => field.name === layer.rendererField)!.alias;
     }
-    this.onWidgetReady()
 
     slider.on("data-change", () => {
       const visualVariable = clone(slider.visualVariable)
