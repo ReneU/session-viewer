@@ -32,6 +32,7 @@ export default class LayerFactory {
             url: config.taskGeometriesLayer.url,
             title: config.taskGeometriesLayer.title,
             id: config.taskGeometriesLayer.id,
+            legendEnabled: false,
             renderer: {
                 type: "simple",
                 symbol: {
