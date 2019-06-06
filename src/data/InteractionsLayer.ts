@@ -94,6 +94,7 @@ import {
             id,
             title,
             source,
+            visible: false,
             fields: InteractionsLayer.fields,
             objectIdField: "ObjectID"
         }
