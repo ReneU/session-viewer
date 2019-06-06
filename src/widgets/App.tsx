@@ -59,7 +59,7 @@ export default class App extends declared(Widget) {
     layerFactory.createSummarizedMovesLayer(appIds[1]).then((layer: GraphicsLayer) => mapRight.add(layer));
     layerFactory.createInteractionPointsLayer(appIds[1]).then((layer: GeometryLayer) => mapRight.add(layer));
     Promise.all([leftView.when(), rightView.when()]).then(() => {
-      this.initializeRelationshipLegend(rightView);
+      this.initializeRelationshipLegend(leftView);
       this.initializeHistogramSliders(leftView, rightView);
       this.synchronizeMaps(leftView, rightView);
       this.synchronizeViews(leftView, rightView);

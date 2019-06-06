@@ -37,7 +37,6 @@ export default class HistogramSlider extends declared(Accessor) {
     this.render();
     this.fieldWatchHandle = layer.watch("rendererField", () => {
       this.updateVisibility();
-      if(!this.visible) return;
       this.render();
     });
   }
@@ -68,6 +67,7 @@ export default class HistogramSlider extends declared(Accessor) {
   }
 
   private render(){
+    if(!this.visible) return;
     const view = this.view;
     const theme = this.theme;
     const layer = this.layer;

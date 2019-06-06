@@ -1,13 +1,17 @@
 import Accessor from "esri/core/Accessor";
-import { declared, property, subclass } from "esri/core/accessorSupport/decorators";
 import MapView from "esri/views/MapView";
 import Legend from "esri/widgets/Legend";
 import GeometryLayer from '../data/GeometryLayer';
+import {createRenderer} from "esri/renderers/smartMapping/creators/relationship";
+import { declared, property, subclass } from "esri/core/accessorSupport/decorators";
+
+import appConfig from '../appConfig';
 
 @subclass("app.widgets.RelationshipLegend")
 export default class RelationshipLegend extends declared(Accessor) {
 
   @property() widget: Legend;
+  @property() view: MapView;
 
   @property() visible: boolean = false;
 
@@ -22,6 +26,7 @@ export default class RelationshipLegend extends declared(Accessor) {
 
   constructor(params: DescriptionParams){
     super();
+    this.view = params.view;
     this.createLegend(params.view);
   }
 
@@ -34,16 +39,49 @@ export default class RelationshipLegend extends declared(Accessor) {
       this.fieldWatchHandle.remove();
     }
     const layer = this.layer;
-    this.visible = layer && layer.rendererField.toLowerCase().includes("relationship");
+    this.updateVisibility();
     if(!layer) return;
     this.fieldWatchHandle = layer.watch("rendererField", field => {
-      this.visible = field.toLowerCase().includes("relationship");
+      this.updateVisibility();
+      this.updateRenderer();
     });
+    this.updateRenderer();
   }
 
   private createLegend(view: MapView){
     const legend = new Legend({view});
     this.widget = legend;
+  }
+
+  private updateRenderer(){
+    if(!this.visible) return;
+    const layer = this.layer;
+    const params = {
+      layer,
+      view: this.view,
+      basemap: appConfig.basemap,
+      field1: {
+        field: "zoom"
+      },
+      field2: {
+        field: "pragmaticQuality"
+      },
+      focus: "HH",
+      defaultSymbolEnabled: false
+    };
+    
+    createRenderer(params)
+      .then(function(response){
+        layer.renderer = response.renderer;
+      })
+      .catch(function(error) {
+        console.log("there was an error: ", error);
+      });
+  }
+
+  private updateVisibility(){
+    const layer = this.layer;
+    this.visible = layer && layer.rendererField.toLowerCase().includes("relationship");
   }
 }
 
