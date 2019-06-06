@@ -31,12 +31,12 @@ export default class HistogramSlider extends declared(Accessor) {
     if(this.fieldWatchHandle){
       this.fieldWatchHandle.remove();
     }
-    this.visible = layer && !layer.rendererField.toLowerCase().includes("scale");
+    this.updateVisibility();
     if(!layer) return;
     this.render();
     this.fieldWatchHandle = layer.watch("rendererField", () => {
-      const visible = this.visible = !layer.rendererField.toLowerCase().includes("scale");
-      if(!visible) return;
+      this.updateVisibility();
+      if(!this.visible) return;
       this.render();
     });
   }
@@ -119,6 +119,11 @@ export default class HistogramSlider extends declared(Accessor) {
     if(slider){
       slider.destroy();
     }
+  }
+
+  private updateVisibility(){
+    const layer = this.layer;
+    this.visible = layer && !layer.rendererField.toLowerCase().includes("scale");
   }
 }
 
