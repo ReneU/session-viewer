@@ -101,10 +101,10 @@ import {
             id: "totalSessionTime"
         },
         {
-            title: "Pragmatic Quality",
+            title: "Pragmatic Quality + Zoom Relationship",
             type: "toggle",
             value: false,
-            id: "pragmaticQuality"
+            id: "pragmaticQualityZoomRelationship"
         },
         {
             title: "Hedonic Quality",

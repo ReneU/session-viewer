@@ -18,6 +18,7 @@ export default class HistogramSlider extends declared(Accessor) {
 
   @property({value: false})
   set visible(visible: boolean) {
+    this._set("visible", visible);
     const container = document.getElementById(this.nodeId + "-container");
     if(container) {
       container.style.visibility = visible ? "visible" : "hidden";
@@ -123,7 +124,7 @@ export default class HistogramSlider extends declared(Accessor) {
 
   private updateVisibility(){
     const layer = this.layer;
-    this.visible = layer && !layer.rendererField.toLowerCase().includes("scale");
+    this.visible = layer && !layer.rendererField.toLowerCase().includes("relationship");
   }
 }
 

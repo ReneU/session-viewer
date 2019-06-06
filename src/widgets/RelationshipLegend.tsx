@@ -34,10 +34,10 @@ export default class RelationshipLegend extends declared(Accessor) {
       this.fieldWatchHandle.remove();
     }
     const layer = this.layer;
-    this.visible = layer && layer.rendererField.toLowerCase().includes("scale");
+    this.visible = layer && layer.rendererField.toLowerCase().includes("relationship");
     if(!layer) return;
     this.fieldWatchHandle = layer.watch("rendererField", field => {
-      this.visible = field.toLowerCase().includes("scale");
+      this.visible = field.toLowerCase().includes("relationship");
     });
   }
 
