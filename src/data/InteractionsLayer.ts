@@ -8,7 +8,7 @@ import {
   import Field from "esri/layers/support/Field";
   import Graphic from "esri/Graphic";
   
-  @subclass()
+  @subclass("esri.layers.FeatureLayer")
   export default class InteractionsLayer extends declared(GeometryLayer) {
   
     rendererField = "zoom";
