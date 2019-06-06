@@ -99,17 +99,24 @@ const parseElasticResponse = (response: EsResponse) => {
             }
             const sessionTime = eventProps.timestamp - sessionStartDate;
             const lastInteractionDelay = !!idx ? sessionTime - (events[idx - 1]._source.timestamp - sessionStartDate) : 0;
+            const {message, map_scale, map_zoom,
+                supportive, easy, efficient, clear, exciting, interesting, inventive, leadingEdge} = eventProps;
+            const pragmaticQuality = (supportive + easy + efficient + clear) / 4;
+            const hedonicQuality = (exciting + interesting + inventive + leadingEdge) / 4;
             return {
                 attributes: {
                     ObjectID: event._id,
                     sessionId,
                     interactionCount: idx,
-                    topic: eventProps.message,
-                    scale: eventProps.map_scale,
-                    zoom: eventProps.map_zoom,
+                    topic: message,
+                    scale: map_scale,
+                    zoom: map_zoom,
                     elapsedSessionTime: sessionTime / 1000,
                     lastInteractionDelay,
-                    totalSessionTime
+                    totalSessionTime,
+                    pragmaticQuality,
+                    hedonicQuality,
+                    overallExperience: (pragmaticQuality + hedonicQuality) / 2
                 },
                 geometry: eventProps.map_center
             } as SessionEvent;

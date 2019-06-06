@@ -62,7 +62,15 @@ export default class ElasticsearchStore {
                                     "map_zoom",
                                     "map_center",
                                     "message",
-                                    "timestamp"
+                                    "timestamp",
+                                    "supportive",
+                                    "easy",
+                                    "efficient",
+                                    "clear",
+                                    "exciting",
+                                    "interesting",
+                                    "inventive",
+                                    "leadingEdge"
                                  ]
                               },
                               "size":100

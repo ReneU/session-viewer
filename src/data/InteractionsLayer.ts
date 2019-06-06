@@ -52,6 +52,21 @@ import {
             name: "zoom",
             alias: "Zoom",
             type: "double"
+        }),
+        new Field ({
+            name: "pragmaticQuality",
+            alias: "Pragmatic Quality",
+            type: "double"
+        }),
+        new Field ({
+            name: "hedonicQuality",
+            alias: "Hedonic Quality",
+            type: "double"
+        }),
+        new Field ({
+            name: "overallExperience",
+            alias: "Overall Experience",
+            type: "double"
         })
     ]
     actions = [
@@ -84,6 +99,24 @@ import {
             type: "toggle",
             value: false,
             id: "totalSessionTime"
+        },
+        {
+            title: "Pragmatic Quality",
+            type: "toggle",
+            value: false,
+            id: "pragmaticQuality"
+        },
+        {
+            title: "Hedonic Quality",
+            type: "toggle",
+            value: false,
+            id: "hedonicQuality"
+        },
+        {
+            title: "Overall Experience",
+            type: "toggle",
+            value: false,
+            id: "overallExperience"
         }
         ];
 

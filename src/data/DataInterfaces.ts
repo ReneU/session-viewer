@@ -25,7 +25,15 @@ interface EsSource {
     map_scale: number,
     map_zoom: number,
     timestamp: number,
-    map_center: Point
+    map_center: Point,
+    supportive: number,
+    easy: number,
+    efficient: number,
+    clear: number,
+    exciting: number,
+    interesting: number,
+    inventive: number,
+    leadingEdge: number
 }
 
 export interface Session {
@@ -48,6 +56,9 @@ export interface EventAttributes {
     interactionCount: number,
     elapsedSessionTime: number,
     lastInteractionDelay: number,
+    pragmaticQuality: number,
+    hedonicQuality: number,
+    overallExperience: number
 }
 
 interface EventGeometry {
