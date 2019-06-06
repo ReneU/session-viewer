@@ -34,8 +34,6 @@ const CSS = {
 
 @subclass("app.widgets.App")
 export default class App extends declared(Widget) {
-  private mapLeft: EsriMap;
-  private mapRight: EsriMap;
   private viewLeft: MapView;
   private viewRight: MapView;
   private sliderLeft: HistogramSlider;
@@ -45,34 +43,34 @@ export default class App extends declared(Widget) {
   constructor(params: AppViewParams) {
     super(params);
     const appIds = config.appIds;
-    this.mapLeft = new EsriMap({basemap: config.basemap, layers: [LayerFactory.createTaskGeometriesLayer()]});
-    this.mapRight = new EsriMap({basemap: config.basemap, layers: [LayerFactory.createTaskGeometriesLayer()]});
-    const viewLeft = this.viewLeft = new MapView({
-      extent: config.initialExtent,
-      map: this.mapLeft,
-      constraints: {
-        rotationEnabled: false
-      }
-    });
-    viewLeft.ui.components = [];
+    const mapLeft = new EsriMap({basemap: config.basemap});
+    const mapRight = new EsriMap({basemap: config.basemap});
+    
+    const viewLeft = this.viewLeft = this.createView(mapLeft);
     const tableOfContents = new TableOfContents({view: viewLeft});
     viewLeft.ui.add(tableOfContents.getWidget(), "top-left");
-    const viewRight = this.viewRight = new MapView({
-      extent: config.initialExtent,
-      map: this.mapRight,
+    const viewRight = this.viewRight = this.createView(mapRight);
+
+    const layerFactory = new LayerFactory(appIds);
+    mapLeft.add(LayerFactory.createTaskGeometriesLayer());
+    layerFactory.createSummarizedMovesLayer(appIds[0]).then((layer: GraphicsLayer) => mapLeft.add(layer));
+    layerFactory.createInteractionPointsLayer(appIds[0]).then((layer: GeometryLayer) => mapLeft.add(layer));
+    mapRight.add(LayerFactory.createTaskGeometriesLayer());
+    layerFactory.createSummarizedMovesLayer(appIds[1]).then((layer: GraphicsLayer) => mapRight.add(layer));
+    layerFactory.createInteractionPointsLayer(appIds[1]).then((layer: GeometryLayer) => mapRight.add(layer));
+    Promise.all([viewLeft.when(), viewRight.when()])
+      .then(() => this.onViewsReady());
+  }
+
+  private createView (map: EsriMap){
+    const view = new MapView({
+      map, extent: config.initialExtent,
       constraints: {
         rotationEnabled: false
       }
     });
-    viewRight.ui.components = [];
-
-    const dataProvider = new LayerFactory(appIds);
-    dataProvider.createSummarizedMovesLayer(appIds[0]).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
-    dataProvider.createInteractionPointsLayer(appIds[0]).then((layer: GeometryLayer) => this.mapLeft.add(layer));
-    dataProvider.createSummarizedMovesLayer(appIds[1]).then((layer: GraphicsLayer) => this.mapRight.add(layer));
-    dataProvider.createInteractionPointsLayer(appIds[1]).then((layer: GeometryLayer) => this.mapRight.add(layer));
-    Promise.all([this.viewLeft.when(), this.viewRight.when()])
-      .then(() => this.onViewsReady());
+    view.ui.components = [];
+    return view;
   }
 
   render() {
