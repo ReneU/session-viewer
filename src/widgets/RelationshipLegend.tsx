@@ -13,7 +13,7 @@ export default class RelationshipLegend extends declared(Accessor) {
 
   @property()
   set layer(layer: GeometryLayer) {
-    if(this.layer && layer.id === this.layer.id) return;
+    if(layer && this.layer && layer.id === this.layer.id) return;
     this._set("layer", layer);
     this.updateFieldViewWatchHandle();
   }
@@ -22,7 +22,6 @@ export default class RelationshipLegend extends declared(Accessor) {
 
   constructor(params: DescriptionParams){
     super();
-    this.updateFieldViewWatchHandle();
     this.createLegend(params.view);
   }
 
@@ -34,10 +33,10 @@ export default class RelationshipLegend extends declared(Accessor) {
     if(this.fieldWatchHandle){
       this.fieldWatchHandle.remove();
     }
-    if(!this.layer) {
-      return;
-    }
-    this.fieldWatchHandle = this.layer.watch("rendererField", field => {
+    const layer = this.layer;
+    this.visible = layer && layer.rendererField.toLowerCase().includes("scale");
+    if(!layer) return;
+    this.fieldWatchHandle = layer.watch("rendererField", field => {
       this.visible = field.toLowerCase().includes("scale");
     });
   }

@@ -15,20 +15,32 @@ import appConfig from '../appConfig';
 export default class HistogramSlider extends declared(Accessor) {
 
   @property() onWidgetReady: () => void;
-  @property()
+
+  @property({value: false})
   set visible(visible: boolean) {
     const container = document.getElementById(this.nodeId + "-container");
     if(container) {
       container.style.visibility = visible ? "visible" : "hidden";
     }
   }
+
   @property()
   set layer(layer: GeometryLayer) {
-    if(layer.id === this.layer.id) return;
+    if(layer && this.layer && layer.id === this.layer.id) return;
     this._set("layer", layer);
-    this.updateFieldWatcher(layer);
+    if(this.fieldWatchHandle){
+      this.fieldWatchHandle.remove();
+    }
+    this.visible = layer && !layer.rendererField.toLowerCase().includes("scale");
+    if(!layer) return;
     this.render();
+    this.fieldWatchHandle = layer.watch("rendererField", () => {
+      const visible = this.visible = !layer.rendererField.toLowerCase().includes("scale");
+      if(!visible) return;
+      this.render();
+    });
   }
+
   @property({value: "high-to-low"})
   set theme(theme: string) {
     if(theme === this.theme) return;
@@ -45,8 +57,6 @@ export default class HistogramSlider extends declared(Accessor) {
 
   constructor(params: HistogramSliderParams){
     super();
-    const layer = params.layer;
-    this._set("layer", layer);
     this.view = params.view;
     this.nodeId = params.nodeId;
     const selectElement = this.selectNode = document.getElementById(params.nodeId + "-select")! as HTMLSelectElement;
@@ -54,23 +64,14 @@ export default class HistogramSlider extends declared(Accessor) {
     selectElement.onchange = () => {
       this.theme = selectElement.value;
     };
-    this.render();
-    this.updateFieldWatcher(layer);
-  }
-
-  private updateFieldWatcher(layer: GeometryLayer) {
-    if(this.fieldWatchHandle){
-      this.fieldWatchHandle.remove();
-    }
-    this.fieldWatchHandle = this.layer.watch("rendererField", () => this.render());
   }
 
   private render(){
-    const basemap = appConfig.basemap;
-    const theme = this.theme;
     const view = this.view;
+    const theme = this.theme;
     const layer = this.layer;
     const field = layer.rendererField;
+    const basemap = appConfig.basemap;
     let colorParams = { view, theme, layer, field, basemap };
 
     layer
@@ -122,7 +123,6 @@ export default class HistogramSlider extends declared(Accessor) {
 }
 
 interface HistogramSliderParams {
-  layer: GeometryLayer,
   view: MapView
   nodeId: string,
 }

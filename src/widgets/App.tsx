@@ -38,8 +38,6 @@ export default class App extends declared(Widget) {
   private mapRight: EsriMap;
   private viewLeft: MapView;
   private viewRight: MapView;
-  private layerLeft: GeometryLayer;
-  private layerRight: GeometryLayer;
   private sliderLeft: HistogramSlider;
   private sliderRight: HistogramSlider;
   private legend: RelationshipLegend;
@@ -69,20 +67,11 @@ export default class App extends declared(Widget) {
     viewRight.ui.components = [];
 
     const dataProvider = new LayerFactory(appIds);
-
     dataProvider.createSummarizedMovesLayer(appIds[0]).then((layer: GraphicsLayer) => this.mapLeft.add(layer));
-    const layerLeftReady = dataProvider.createInteractionPointsLayer(appIds[0])
-      .then((layer: GeometryLayer) => {
-        this.mapLeft.add(layer);
-        this.layerLeft = layer;
-      });
+    dataProvider.createInteractionPointsLayer(appIds[0]).then((layer: GeometryLayer) => this.mapLeft.add(layer));
     dataProvider.createSummarizedMovesLayer(appIds[1]).then((layer: GraphicsLayer) => this.mapRight.add(layer));
-    const layerRightReady = dataProvider.createInteractionPointsLayer(appIds[1])
-      .then((layer: GeometryLayer) => {
-        this.mapRight.add(layer);
-        this.layerRight = layer;
-      });
-    Promise.all([layerLeftReady, layerRightReady, this.viewLeft.when(), this.viewRight.when()])
+    dataProvider.createInteractionPointsLayer(appIds[1]).then((layer: GeometryLayer) => this.mapRight.add(layer));
+    Promise.all([this.viewLeft.when(), this.viewRight.when()])
       .then(() => this.onViewsReady());
   }
 
@@ -135,18 +124,17 @@ export default class App extends declared(Widget) {
   }
 
   private initializeHistogramSliders() {
-    this.sliderLeft = this.initializeHistogramSlider({layer: this.layerLeft, view: this.viewLeft, position: "left"});
-    this.sliderRight = this.initializeHistogramSlider({layer: this.layerRight, view: this.viewRight, position: "right"});
+    this.sliderLeft = this.initializeHistogramSlider({view: this.viewLeft, position: "left"});
+    this.sliderRight = this.initializeHistogramSlider({view: this.viewRight, position: "right"});
     this.syncHistogramSliderThemes(this.sliderLeft, this.sliderRight);
   }
 
-  private initializeHistogramSlider({view, layer, position}: {view: MapView, layer: GeometryLayer, position: string}){
+  private initializeHistogramSlider({view, position}: {view: MapView, position: string}){
     const nodeId = `slider-${position}`;
-    const slider = new HistogramSlider({layer, view, nodeId});
+    const slider = new HistogramSlider({view, nodeId});
     slider.onWidgetReady = () => {
       view.ui.add(nodeId + "-container", "bottom-left");
     };
-    slider.visible = layer.visible;
     return slider;
   }
 
@@ -192,8 +180,6 @@ export default class App extends declared(Widget) {
 
   private updateUI(map: EsriMap, slider: HistogramSlider){
       const visibleLayer = map.layers.find(layer => layer.visible && layer instanceof GeometryLayer) as GeometryLayer;
-      if(!visibleLayer) return;
-      slider.visible = true;
       slider.layer = visibleLayer;
       this.legend.layer = visibleLayer;
   }
