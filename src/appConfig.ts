@@ -27,7 +27,7 @@ export default {
     },
     taskGeometriesLayer: {
         url: "https://services1.arcgis.com/XRQ58kpEa17kSlHX/arcgis/rest/services/test_mapapps_days/FeatureServer/0",
-        id: "task-objects",
+        id: "task-geometries",
         title: "Task Geometries"
     }
 }
