@@ -56,7 +56,7 @@ const getSectionIndex = (id: string, sections: ActionToggle[][]) => {
 
 const hasOppositeSectionActiveAction = (index: number, sections: Collection<Collection<ActionToggle>>) => {
   const oppositeSection = index ? sections.getItemAt(0) : sections.getItemAt(1);
-  return !!oppositeSection.find(action => action.value);
+  return oppositeSection && !!oppositeSection.find(action => action.value);
 }
 
 const getActiveActionIds = (sections: Collection<Collection<ActionToggle>>) => {
