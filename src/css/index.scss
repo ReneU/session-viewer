@@ -1,5 +1,5 @@
 $blue: #0079c1;
-$gray: #efefef;
+$gray: #2e2e2e;
 $white: #efefef;
 $black:#242424;
 $orange:#ff642e;
@@ -136,6 +136,22 @@ header.top-nav {
   background: $black;
   color: $white;
   border-radius: 3px;
+}
+
+.description-widget-base {
+  padding-bottom: 6px;
+  padding-top: 6px;
+  padding-left: 7px;
+  padding-right: 7px;
+  background-color: $gray;
+}
+
+.description-widget-content {
+  background-color: $black;
+  padding-right: 7px;
+  font-family: "Avenir Next W00", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 15px;
+  color: $white;
 }
 
 .main {

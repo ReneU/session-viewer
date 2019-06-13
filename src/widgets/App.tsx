@@ -19,6 +19,8 @@ import TableOfContents from './TableOfContents';
 import LayerFactory from '../data/LayerFactory';
 import GeometryLayer from '../data/GeometryLayer';
 import RelationshipLegend from './RelationshipLegend';
+import Description from './Description';
+import InteractionsLayer from '../data/InteractionsLayer';
 
 interface AppViewParams extends esri.WidgetProperties {}
 
@@ -40,6 +42,7 @@ export default class App extends declared(Widget) {
   private sliderRight: HistogramSlider;
   private legendLeft: RelationshipLegend;
   private legendRight: RelationshipLegend;
+  private descriptionWidget: Description;
 
   constructor(params: AppViewParams) {
     super(params);
@@ -48,9 +51,9 @@ export default class App extends declared(Widget) {
     const mapRight = new EsriMap({basemap: config.basemap});
     
     const leftView = this.viewLeft = this.createView(mapLeft);
-    const tableOfContents = new TableOfContents({view: leftView});
-    leftView.ui.add(tableOfContents.getWidget(), "top-left");
     const rightView = this.viewRight = this.createView(mapRight);
+    const descriptionWidget = this.descriptionWidget = new Description();
+    rightView.ui.add(descriptionWidget, "top-right");
 
     const layerFactory = new LayerFactory(appIds);
     mapLeft.add(LayerFactory.createTaskGeometriesLayer());
@@ -60,6 +63,9 @@ export default class App extends declared(Widget) {
     layerFactory.createSummarizedMovesLayer(appIds[1]).then((layer: GraphicsLayer) => mapRight.add(layer));
     layerFactory.createInteractionPointsLayer(appIds[1]).then((layer: GeometryLayer) => mapRight.add(layer));
     Promise.all([leftView.when(), rightView.when()]).then(() => {
+      const tableOfContents = new TableOfContents({view: leftView});
+      leftView.ui.add(tableOfContents.getWidget(), "top-left");
+
       this.initializeRelationshipLegends(leftView, rightView);
       this.initializeHistogramSliders(leftView, rightView);
       this.synchronizeMaps(leftView, rightView);
@@ -155,11 +161,11 @@ export default class App extends declared(Widget) {
   private synchronizeMaps(leftView: MapView, rightView: MapView) {
     const mapLeft = leftView.map;
     const mapRight = rightView.map;
-    this.synchronizeLayers(mapLeft, mapRight, this.sliderLeft, this.legendLeft);
-    this.synchronizeLayers(mapRight, mapLeft, this.sliderRight, this.legendRight);
+    this.observeLayerChanges(mapLeft, mapRight, this.sliderLeft, this.legendLeft);
+    this.observeLayerChanges(mapRight, mapLeft, this.sliderRight, this.legendRight);
   }
 
-  private synchronizeLayers(sourceMap: EsriMap, targetMap: EsriMap, sourceSlider: HistogramSlider, sourceLegend: RelationshipLegend) {
+  private observeLayerChanges(sourceMap: EsriMap, targetMap: EsriMap, sourceSlider: HistogramSlider, sourceLegend: RelationshipLegend) {
     sourceMap.allLayers.forEach(layer => {
       // sync visibility of all layers
       layer.watch("visible", visible => {
@@ -175,6 +181,7 @@ export default class App extends declared(Widget) {
           });
         }
         this.updateUI(sourceMap, sourceSlider, sourceLegend);
+        this.updateDescriptionState(sourceMap);
       });
 
       // sync rendererFields of interaction layers
@@ -183,6 +190,7 @@ export default class App extends declared(Widget) {
           return targetLayer.id === layer.id;
         }) as GeometryLayer;
         interactionLayer.rendererFields = value;
+        this.updateDescriptionState(sourceMap);
       })
     });
   }
@@ -191,6 +199,17 @@ export default class App extends declared(Widget) {
       const visibleLayer = map.layers.find(layer => layer.visible && layer instanceof GeometryLayer) as GeometryLayer;
       slider.layer = visibleLayer;
       legend.layer = visibleLayer;
+  }
+
+  private updateDescriptionState(map: EsriMap) {
+    const layer = map.layers.find(layer => layer.visible && layer instanceof GeometryLayer) as GeometryLayer;
+    this.descriptionWidget.state = layer ? 
+      layer instanceof InteractionsLayer ? 
+        (layer as InteractionsLayer).rendererFields.length > 1 ? 
+          "interactionRelationship" : 
+        "interactionSlider": 
+      "summarizedMoves" : 
+    "start";
   }
 
   private synchronizeViews (leftView: MapView, rightView: MapView) {
