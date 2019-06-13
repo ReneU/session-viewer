@@ -2,14 +2,14 @@ import {EsResponse, EsSession, EsEvent, SessionEvent, Session, Cluster, Move, Tr
 import ElasticsearchStore from './ElasticsearchStore';
 import FeatureLayer from 'esri/layers/FeatureLayer';
 import InteractionsLayer from './InteractionsLayer';
+import MovesLayer from './MovesLayer';
 import config from "../appConfig";
 
 import SpatialReference from 'esri/geometry/SpatialReference';
 import geometryEngine from "esri/geometry/geometryEngine";
+import Circle from 'esri/geometry/Circle';
 import { Point } from 'esri/geometry';
 import Graphic from "esri/Graphic";
-import Circle from 'esri/geometry/Circle';
-import MovesLayer from './MovesLayer';
 
 const CONSTANTS = {
     minRadius: 1000,
