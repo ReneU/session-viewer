@@ -20,17 +20,17 @@ export default class MovesLayer extends declared(GeometryLayer) {
         }),
         new Field ({
             name: "interactionCount",
-            alias: "InteractionCount",
+            alias: "Interaction Count",
             type: "double"
         }),
         new Field ({
             name: "scaleDiff",
-            alias: "ScaleDifference",
+            alias: "Scale Difference",
             type: "double"
         }),
         new Field ({
             name: "zoomDiff",
-            alias: "Zoom",
+            alias: "Zoom Difference",
             type: "double"
         })
     ]

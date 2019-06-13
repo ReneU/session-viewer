@@ -30,17 +30,17 @@ import {
         }),
         new Field ({
             name: "interactionCount",
-            alias: "InteractionCount",
+            alias: "Interaction Count",
             type: "double"
         }),
         new Field ({
             name: "elapsedSessionTime",
-            alias: "ElapsedSessionTime",
+            alias: "Elapsed Session-Time",
             type: "double"
         }),
         new Field ({
             name: "totalSessionTime",
-            alias: "TotalSessionTime",
+            alias: "Total Session-Time",
             type: "double"
         }),
         new Field ({
