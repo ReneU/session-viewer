@@ -20,17 +20,13 @@ export default class Description extends declared(Widget) {
 
 
   render() {
-    const greeting = this._getGreeting();
+    const greeting = appConfig.descriptionTexts[this.state];
     return (
       <div class={CSS.base}>
         <div class={CSS.content}>
-        {greeting}
+          {greeting}
         </div>
       </div>
       );
-  }
-
-  private _getGreeting(): string {
-    return appConfig.descriptionTexts[this.state];
   }
 }
