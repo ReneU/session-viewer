@@ -14,21 +14,17 @@ export default {
     },
     "appIds": ["beispielnutzerstudiecrownhotels", "beispielnutzerstudiedefaulthotels"],
     "interactionLayer": {
-        title: "Interactions",
+        title: "Karteninteraktionen",
         id: "interaction_points"
     },
-    "trajectoriesLayer": {
-        title: "Trajectories",
-        id: "trajectories"
-    },
     "movesLayer": {
-        title: "Summarized Moves",
+        title: "Aggregierte Nutertrajektorien",
         id: "moves"
     },
     taskGeometriesLayer: {
         url: "https://services1.arcgis.com/XRQ58kpEa17kSlHX/arcgis/rest/services/test_mapapps_days/FeatureServer/0",
         id: "task-geometries",
-        title: "Task Geometries"
+        title: "Hotel Geometrien"
     },
     actions: {
         zoom: "Zoom-Level",
