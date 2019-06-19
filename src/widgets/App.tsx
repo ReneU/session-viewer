@@ -57,12 +57,13 @@ export default class App extends declared(Widget) {
 
     const layerFactory = new LayerFactory(appIds);
     mapLeft.add(LayerFactory.createTaskGeometriesLayer());
-    layerFactory.createSummarizedMovesLayer(appIds[0]).then((layer: GraphicsLayer) => mapLeft.add(layer));
-    layerFactory.createInteractionPointsLayer(appIds[0]).then((layer: GeometryLayer) => mapLeft.add(layer));
+    const layersReady = [];
+    layersReady.push(layerFactory.createSummarizedMovesLayer(appIds[0]).then((layer: GraphicsLayer) => mapLeft.add(layer)));
+    layersReady.push(layerFactory.createInteractionPointsLayer(appIds[0]).then((layer: GeometryLayer) => mapLeft.add(layer)));
     mapRight.add(LayerFactory.createTaskGeometriesLayer());
-    layerFactory.createSummarizedMovesLayer(appIds[1]).then((layer: GraphicsLayer) => mapRight.add(layer));
-    layerFactory.createInteractionPointsLayer(appIds[1]).then((layer: GeometryLayer) => mapRight.add(layer));
-    Promise.all([leftView.when(), rightView.when()]).then(() => {
+    layersReady.push(layerFactory.createSummarizedMovesLayer(appIds[1]).then((layer: GraphicsLayer) => mapRight.add(layer)));
+    layersReady.push(layerFactory.createInteractionPointsLayer(appIds[1]).then((layer: GeometryLayer) => mapRight.add(layer)));
+    Promise.all([leftView.when(), rightView.when(), ...layersReady]).then(() => {
       const tableOfContents = new TableOfContents({view: leftView});
       leftView.ui.add(tableOfContents.getWidget(), "top-left");
 
