@@ -1,7 +1,7 @@
 export default {
     "appName": "Session Viewer",
-    "scenarioA": "With Off-Screen Indicators",
-    "scenarioB": "Without Off-Screen Indicators",
+    "scenarioA": "Off-Screen Indicator Szenario",
+    "scenarioB": "Standard Szenario",
     "basemap": "dark-gray",
     "initialExtent":  {
         "xmin":836278.4172107871,
@@ -29,6 +29,17 @@ export default {
         url: "https://services1.arcgis.com/XRQ58kpEa17kSlHX/arcgis/rest/services/test_mapapps_days/FeatureServer/0",
         id: "task-geometries",
         title: "Task Geometries"
+    },
+    actions: {
+        zoom: "Zoom-Level",
+        interactionCount: "Interaktionen seit Sitzungsstart",
+        elapsedSessionTime: "Sekunden seit Sitzungsstart",
+        totalSessionTime: "Gesamtdauer der Sitzung (s)",
+        pragmaticQuality: "Pragmatische Qualität",
+        hedonicQuality: "Hedonische Qualität",
+        overallExperience: "Insgesamte Qualität",
+        zoomDiff: "Zoom-Level Differenz",
+        interactionCountMoves: "Anzahl der aggregierten Interaktionen",
     },
     descriptionTexts: {
         start: `

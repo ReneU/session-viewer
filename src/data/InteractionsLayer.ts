@@ -7,6 +7,7 @@ import {
   import Collection from "esri/core/Collection";
   import Field from "esri/layers/support/Field";
   import Graphic from "esri/Graphic";
+import appConfig from '../appConfig';
   
   @subclass("esri.layers.FeatureLayer")
   export default class InteractionsLayer extends declared(GeometryLayer) {
@@ -72,31 +73,25 @@ import {
     actions = [
         [
             {
-                title: "Zoom Factor",
+                title: appConfig.actions.zoom,
                 type: "toggle",
                 value: true,
                 id: "zoom"
             },
             {
-                title: "Scale",
-                type: "toggle",
-                value: false,
-                id: "scale"
-            },
-            {
-                title: "Interaction Count",
+                title: appConfig.actions.interactionCount,
                 type: "toggle",
                 value: false,
                 id: "interactionCount"
             },
             {
-                title: "Time since Session-Start (s)",
+                title: appConfig.actions.elapsedSessionTime,
                 type: "toggle",
                 value: false,
                 id: "elapsedSessionTime"
             },
             {
-                title: "Total Session-Time (s)",
+                title: appConfig.actions.totalSessionTime,
                 type: "toggle",
                 value: false,
                 id: "totalSessionTime"
@@ -104,19 +99,19 @@ import {
         ],
         [
             {
-                title: "Pragmatic Quality",
+                title: appConfig.actions.pragmaticQuality,
                 type: "toggle",
                 value: false,
                 id: "pragmaticQuality"
             },
             {
-                title: "Hedonic Quality",
+                title: appConfig.actions.hedonicQuality,
                 type: "toggle",
                 value: false,
                 id: "hedonicQuality"
             },
             {
-                title: "Overall Experience",
+                title: appConfig.actions.overallExperience,
                 type: "toggle",
                 value: false,
                 id: "overallExperience"
