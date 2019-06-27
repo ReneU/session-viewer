@@ -7,7 +7,7 @@ const ui = {
     interactionLayer: "Karteninteraktionen",
     movesLayer: "Aggregierte Nutzertrajektorien",
     taskGeometriesLayer: "Hotel Standorte",
-    actions: {
+    fields: {
       zoom: "Zoom-Level",
       interactionCount: "Interaktionen seit Sitzungsstart",
       elapsedSessionTime: "Sekunden seit Sitzungsstart",
@@ -52,7 +52,7 @@ const ui = {
     interactionLayer: "Map Interactions",
     movesLayer: "Aggregated User-Trajectories",
     taskGeometriesLayer: "Hotel Locations",
-    actions: {
+    fields: {
       zoom: "Zoom-Level",
       interactionCount: "User Interaction Count Since Session Start",
       elapsedSessionTime: "Seconds Since Session Start",
@@ -91,7 +91,7 @@ const ui = {
       `
     }
   }
-}
+};
 
 export default {
   appName: "Session Viewer",
@@ -125,21 +125,22 @@ export default {
     id: "task-geometries",
     title: "Hotel Geometrien"
   },
-  actions: {
-    zoom: ui[locale].actions.zoom,
-    interactionCount: ui[locale].actions.interactionCount,
-    elapsedSessionTime: ui[locale].actions.elapsedSessionTime,
-    totalSessionTime: ui[locale].actions.totalSessionTime,
-    pragmaticQuality: ui[locale].actions.pragmaticQuality,
-    hedonicQuality: ui[locale].actions.hedonicQuality,
-    overallExperience: ui[locale].actions.overallExperience,
-    zoomDiff: ui[locale].actions.zoomDiff,
-    interactionCountMoves: ui[locale].actions.interactionCountMoves
+  fields: {
+    zoom: ui[locale].fields.zoom,
+    interactionCount: ui[locale].fields.interactionCount,
+    elapsedSessionTime: ui[locale].fields.elapsedSessionTime,
+    totalSessionTime: ui[locale].fields.totalSessionTime,
+    pragmaticQuality: ui[locale].fields.pragmaticQuality,
+    hedonicQuality: ui[locale].fields.hedonicQuality,
+    overallExperience: ui[locale].fields.overallExperience,
+    zoomDiff: ui[locale].fields.zoomDiff,
+    interactionCountMoves: ui[locale].fields.interactionCountMoves
   },
   descriptionTexts: {
     start: ui[locale].descriptionTexts.start,
     interactionSlider: ui[locale].descriptionTexts.interactionSlider,
-    interactionRelationship: ui[locale].descriptionTexts.interactionRelationship,
+    interactionRelationship:
+      ui[locale].descriptionTexts.interactionRelationship,
     aggregatedTracks: ui[locale].descriptionTexts.aggregatedTracks
   }
 };

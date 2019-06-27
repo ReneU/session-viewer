@@ -27,12 +27,12 @@ export default class InteractionsLayer extends declared(GeometryLayer) {
     }),
     new Field({
       name: "interactionCount",
-      alias: "Interaction Count",
+      alias: appConfig.fields.interactionCount,
       type: "double"
     }),
     new Field({
       name: "elapsedSessionTime",
-      alias: "Elapsed Session-Time",
+      alias: appConfig.fields.elapsedSessionTime,
       type: "double"
     }),
     new Field({
@@ -47,41 +47,41 @@ export default class InteractionsLayer extends declared(GeometryLayer) {
     }),
     new Field({
       name: "zoom",
-      alias: "Zoom",
+      alias: appConfig.fields.zoom,
       type: "double"
     }),
     new Field({
       name: "pragmaticQuality",
-      alias: "Pragmatic Quality",
+      alias: appConfig.fields.pragmaticQuality,
       type: "double"
     }),
     new Field({
       name: "hedonicQuality",
-      alias: "Hedonic Quality",
+      alias: appConfig.fields.hedonicQuality,
       type: "double"
     }),
     new Field({
       name: "overallExperience",
-      alias: "Overall Experience",
+      alias: appConfig.fields.overallExperience,
       type: "double"
     })
   ];
   actions = [
     [
       {
-        title: appConfig.actions.zoom,
+        title: appConfig.fields.zoom,
         type: "toggle",
         value: true,
         id: "zoom"
       },
       {
-        title: appConfig.actions.interactionCount,
+        title: appConfig.fields.interactionCount,
         type: "toggle",
         value: false,
         id: "interactionCount"
       },
       {
-        title: appConfig.actions.elapsedSessionTime,
+        title: appConfig.fields.elapsedSessionTime,
         type: "toggle",
         value: false,
         id: "elapsedSessionTime"
@@ -89,19 +89,19 @@ export default class InteractionsLayer extends declared(GeometryLayer) {
     ],
     [
       {
-        title: appConfig.actions.pragmaticQuality,
+        title: appConfig.fields.pragmaticQuality,
         type: "toggle",
         value: false,
         id: "pragmaticQuality"
       },
       {
-        title: appConfig.actions.hedonicQuality,
+        title: appConfig.fields.hedonicQuality,
         type: "toggle",
         value: false,
         id: "hedonicQuality"
       },
       {
-        title: appConfig.actions.overallExperience,
+        title: appConfig.fields.overallExperience,
         type: "toggle",
         value: false,
         id: "overallExperience"

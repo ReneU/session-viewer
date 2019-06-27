@@ -17,7 +17,7 @@ export default class MovesLayer extends declared(GeometryLayer) {
     }),
     new Field({
       name: "interactionCount",
-      alias: "Interaction Count",
+      alias: appConfig.fields.interactionCountMoves,
       type: "double"
     }),
     new Field({
@@ -27,20 +27,20 @@ export default class MovesLayer extends declared(GeometryLayer) {
     }),
     new Field({
       name: "zoomDiff",
-      alias: "Zoom Difference",
+      alias: appConfig.fields.zoomDiff,
       type: "double"
     })
   ];
   actions = [
     [
       {
-        title: appConfig.actions.zoomDiff,
+        title: appConfig.fields.zoomDiff,
         type: "toggle",
         value: true,
         id: "zoomDiff"
       },
       {
-        title: appConfig.actions.interactionCountMoves,
+        title: appConfig.fields.interactionCountMoves,
         type: "toggle",
         value: false,
         id: "interactionCount"
