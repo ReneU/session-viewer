@@ -21,7 +21,7 @@ export default {
     id: "interaction_points"
   },
   movesLayer: {
-    title: "Aggregierte Nutertrajektorien",
+    title: "Aggregierte Nutzertrajektorien",
     id: "moves"
   },
   taskGeometriesLayer: {
