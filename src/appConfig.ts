@@ -1,4 +1,4 @@
-const locale = "de";
+const locale = "en";
 
 const ui = {
   de: {
@@ -32,7 +32,7 @@ const ui = {
         Diese Metrik können Sie über das Menü unterhalb des Layer-Titels auswählen ("drei Punkte").
         Die verfügbaren Metriken sind dabei in zwei Kategorien unterteil: Effizient und Zufriedenheit.
         Wenn nur eine Metrik aus einer Kategorie aktiviert ist, erscheint ein zusätzlicher Slider-Widget in der unteren rechten Ecke.
-        Der Slider ermöglicht eine Veränderung der Klassen für die Visualisierung der Metrik und des Modus ("Niedrige zu Hohen Werten" und "Über und unter Durchschnitt").
+        Der Slider ermöglicht eine Veränderung der Klassen für die Visualisierung der Metrik und des Modus ("Niedrig zu Hoch" und "Über und unter").
         Durch die Aktivierung zweier Metriken aus unterschiedlichen Kategorien, können Sie auch deren Beziehung visualisieren.
       `,
       interactionRelationship: `
@@ -44,6 +44,10 @@ const ui = {
         Ein negativer Wert bedeutet, dass der Nutzer sich von der Kartenoberfläche entfernt hat ("herauszoomen").
         Ein positiver Wert bedeutet, dass der Nutzer in die Karte herein gezoomt hat.
       `
+    },
+    slider: {
+      highToLow: "Niedrig zu Hoch",
+      aboveAndBelow: "Über und Unter"
     }
   },
   en: {
@@ -89,6 +93,10 @@ const ui = {
         A negative value means, that the user zoomed out.
         A positive value means, that the user zoomed in.
       `
+    },
+    slider: {
+      highToLow: "High to Low",
+      aboveAndBelow: "Above and Below"
     }
   }
 };
@@ -142,5 +150,9 @@ export default {
     interactionRelationship:
       ui[locale].descriptionTexts.interactionRelationship,
     aggregatedTracks: ui[locale].descriptionTexts.aggregatedTracks
+  },
+  slider: {
+    "high-to-low": ui[locale].slider.highToLow,
+    "above-and-below": ui[locale].slider.aboveAndBelow,
   }
 };

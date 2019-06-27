@@ -55,6 +55,7 @@ export default class HistogramSlider extends declared(Accessor) {
     selectElement.onchange = () => {
       this.theme = selectElement.value;
     };
+    setI18nValues(params.nodeId + "-select");
   }
 
   private render(){
@@ -123,6 +124,12 @@ export default class HistogramSlider extends declared(Accessor) {
     const layer = this.layer;
     this.visible = layer && layer.rendererFields.length === 1;
   }
+}
+
+const setI18nValues = (nodeId: string) => {
+  const selectNode = document.getElementById(nodeId)! as HTMLSelectElement;
+  Array.prototype.slice.apply(selectNode.children).forEach((optionNode: HTMLOptionElement) => optionNode.innerText = appConfig.slider[optionNode.value]);
+
 }
 
 interface HistogramSliderParams {
