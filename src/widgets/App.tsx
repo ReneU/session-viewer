@@ -270,7 +270,7 @@ export default class App extends declared(Widget) {
         ? (layer as InteractionsLayer).rendererFields.length > 1
           ? "interactionRelationship"
           : "interactionSlider"
-        : "summarizedMoves"
+        : "aggregatedTracks"
       : "start";
   }
 

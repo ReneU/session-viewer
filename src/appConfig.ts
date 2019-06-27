@@ -1,7 +1,101 @@
+const locale = "de";
+
+const ui = {
+  de: {
+    scenarioA: "Off-Screen Indicator Szenario",
+    scenarioB: "Standard Szenario",
+    interactionLayer: "Karteninteraktionen",
+    movesLayer: "Aggregierte Nutzertrajektorien",
+    taskGeometriesLayer: "Hotel Standorte",
+    actions: {
+      zoom: "Zoom-Level",
+      interactionCount: "Interaktionen seit Sitzungsstart",
+      elapsedSessionTime: "Sekunden seit Sitzungsstart",
+      totalSessionTime: "Gesamtdauer der Sitzung (s)",
+      pragmaticQuality: "Pragmatische Qualität",
+      hedonicQuality: "Hedonische Qualität",
+      overallExperience: "Insgesamte Qualität",
+      zoomDiff: "Zoom-Level Differenz",
+      interactionCountMoves: "Anzahl der aggregierten Interaktionen"
+    },
+    descriptionTexts: {
+      start: `
+              Das 'Session-Viewer' ermöglicht den interaktiven Vergleich zweier Datensätze mit Hilfe verschiedener Analyselayer.
+              Die Veränderungen an einer Ansicht werden automatisch auf die andere Ansicht synchronisiert (Ausschnitt, aktive Layer).
+              Dadurch können Analyseparameter auf beide Datensätze angewendet und verglichen werden.
+              Klicken Sie zum Starten auf einen der beiden Layer in der oberen, linken Ecke (Inhaltsbaum).
+              Sie können zwischen den "rohen" Position der "Karteninteraktionen" und den "Aggregierten Trajektorien" wählen.
+              Der dritte und letzte Layer enthät die Geometrien aus der ursprünglichen Aufgabe und kann als Referenz genutzt werden.
+          `,
+      interactionSlider: `
+              Der Layer "Karteninteraktionen" zeigt die Positionen einzelner Zoom- und Pan-Interaktionen, wobei die Farbe eine zusätzliche Metrik darstellt.
+              Diese Metrik können Sie über das Menü unterhalb des Layer-Titels auswählen ("drei Punkte").
+              Die verfügbaren Metriken sind dabei in zwei Kategorien unterteil: Effizient und Zufriedenheit.
+              Wenn nur eine Metrik aus einer Kategorie aktiviert ist, erscheint ein zusätzlicher Slider-Widget in der unteren rechten Ecke.
+              Der Slider ermöglicht eine Veränderung der Klassen für die Visualisierung der Metrik und des Modus ("Niedrige zu Hohen Werten" und "Über und unter Durchschnitt").
+              Durch die Aktivierung zweier Metriken aus unterschiedlichen Kategorien, können Sie auch deren Beziehung visualisieren.
+          `,
+      interactionRelationship: `
+              Visualisierungen von Beziehungen ermöglichen die Darstellungen zweier Muster in einer Karten und zeigen, ob zwei Dinge in Beziehung stehen.
+              Das statische Legendenwidget in der unteren rechten Ecke beschreibt die Bedeutung der Farben in der Karte.
+          `,
+          aggregatedTracks: `
+              Die "Aggregierten Nutzertrajektorien" zeigen zusammengefasste WebGIS Sitzungen, wobei die Farbe die Differenz des Zoom-Level zwischen zwei Punkten darstellt.
+              Ein negativer Wert bedeutet, dass der Nutzer sich von der Kartenoberfläche entfernt hat ("herauszoomen").
+              Ein positiver Wert bedeutet, dass der Nutzer in die Karte herein gezoomt hat.
+          `
+    }
+  },
+  en: {
+    scenarioA: "Off-Screen Indicator Scenario",
+    scenarioB: "Default Scenario",
+    interactionLayer: "Map Interactions",
+    movesLayer: "Aggregated User-Trajectories",
+    taskGeometriesLayer: "Hotel Locations",
+    actions: {
+      zoom: "Zoom-Level",
+      interactionCount: "User Interaction Count Since Session Start",
+      elapsedSessionTime: "Seconds Since Session Start",
+      totalSessionTime: "Total Duration of Session (Seconds)",
+      pragmaticQuality: "Pragmatic Quality",
+      hedonicQuality: "Hedonic Quality",
+      overallExperience: "Overall Quality",
+      zoomDiff: "Zoom-Level Ratio",
+      interactionCountMoves: "Count of Aggregated User Interactions"
+    },
+    descriptionTexts: {
+      start: `
+        The 'Session-Viewer' allows you to compare two datasets by interactively working with a set of analytics layer.
+        Manipulating a view's extent or layer will automatically synchronize these changes to the opposite view.
+        This allows you to apply the same analysis parameters on both datasets and compare the differences.
+        To begin, click on one of the layer titles in the upper-left table of contents.
+        You can choose between the raw locations of users' "Interactions" or the "Aggregated User-Trajectories" that show connection between characteristic locations.
+        The third and last layer shows the geometries of the participants' task locations and can be used as a reference.
+      `,
+      interactionSlider: `
+        The "Interaction" layer shows the raw locations of users' interactions whereas the color is used for visualizing the value of selected measures.
+        You can see and change the selected measures by opening the dot-menu next to the layer's title.
+        Measures are split into two categories: Performance and Experience.
+        If a single measure is activated, an additional slider widget is displayed in the lower-right corner.
+        The slider allows you to control the visualization's breakpoints as well as the theme ("High to Low Values" vs "Above and Below Average").
+        You can also choose to visualize the relationship between different measures by selecting two measures from different categories.
+      `,
+      interactionRelationship: `
+        Relationship visualizations allow you to map two patterns within a single map and help you see if two things are related.
+        The legend widget in the lower-right corner explains the meaning of the colors in the map.
+      `,
+      aggregatedTracks: `
+        The "Aggregated User-Trajectories" layer shows the aggregated tracks of users sessions whereas the color is used for visualizing the value of selected measures.
+        You can see and change the selected measures by opening the dot-menu next to the layer's title.
+      `
+    }
+  }
+}
+
 export default {
   appName: "Session Viewer",
-  scenarioA: "Off-Screen Indicator Szenario",
-  scenarioB: "Standard Szenario",
+  scenarioA: ui[locale].scenarioA,
+  scenarioB: ui[locale].scenarioB,
   basemap: "dark-gray",
   initialExtent: {
     xmin: 836278.4172107871,
@@ -17,11 +111,11 @@ export default {
     "beispielnutzerstudiedefaulthotels"
   ],
   interactionLayer: {
-    title: "Karteninteraktionen",
+    title: ui[locale].interactionLayer,
     id: "interaction_points"
   },
   movesLayer: {
-    title: "Aggregierte Nutzertrajektorien",
+    title: ui[locale].movesLayer,
     id: "moves"
   },
   taskGeometriesLayer: {
@@ -31,41 +125,20 @@ export default {
     title: "Hotel Geometrien"
   },
   actions: {
-    zoom: "Zoom-Level",
-    interactionCount: "Interaktionen seit Sitzungsstart",
-    elapsedSessionTime: "Sekunden seit Sitzungsstart",
-    totalSessionTime: "Gesamtdauer der Sitzung (s)",
-    pragmaticQuality: "Pragmatische Qualität",
-    hedonicQuality: "Hedonische Qualität",
-    overallExperience: "Insgesamte Qualität",
-    zoomDiff: "Zoom-Level Differenz",
-    interactionCountMoves: "Anzahl der aggregierten Interaktionen"
+    zoom: ui[locale].actions.zoom,
+    interactionCount: ui[locale].actions.interactionCount,
+    elapsedSessionTime: ui[locale].actions.elapsedSessionTime,
+    totalSessionTime: ui[locale].actions.totalSessionTime,
+    pragmaticQuality: ui[locale].actions.pragmaticQuality,
+    hedonicQuality: ui[locale].actions.hedonicQuality,
+    overallExperience: ui[locale].actions.overallExperience,
+    zoomDiff: ui[locale].actions.zoomDiff,
+    interactionCountMoves: ui[locale].actions.interactionCountMoves
   },
   descriptionTexts: {
-    start: `
-            Das 'Session-Viewer' ermöglicht den interaktiven Vergleich zweier Datensätze mit Hilfe verschiedener Analyselayer.
-            Die Veränderungen an einer Ansicht werden automatisch auf die andere Ansicht synchronisiert (Ausschnitt, aktive Layer).
-            Dadurch können Analyseparameter auf beide Datensätze angewendet und verglichen werden.
-            Klicken Sie zum Starten auf einen der beiden Layer in der oberen, linken Ecke (Inhaltsbaum).
-            Sie können zwischen den "rohen" Position der "Karteninteraktionen" und den "Aggregierten Trajektorien" wählen.
-            Der dritte und letzte Layer enthät die Geometrien aus der ursprünglichen Aufgabe und kann als Referenz genutzt werden.
-        `,
-    interactionSlider: `
-            Der Layer "Karteninteraktionen" zeigt die Positionen einzelner Zoom- und Pan-Interaktionen, wobei die Farbe eine zusätzliche Metrik darstellt.
-            Diese Metrik können Sie über das Menü unterhalb des Layer-Titels auswählen ("drei Punkte").
-            Die verfügbaren Metriken sind dabei in zwei Kategorien unterteil: Effizient und Zufriedenheit.
-            Wenn nur eine Metrik aus einer Kategorie aktiviert ist, erscheint ein zusätzlicher Slider-Widget in der unteren rechten Ecke.
-            Der Slider ermöglicht eine Veränderung der Klassen für die Visualisierung der Metrik und des Modus ("Niedrige zu Hohen Werten" und "Über und unter Durchschnitt").
-            Durch die Aktivierung zweier Metriken aus unterschiedlichen Kategorien, können Sie auch deren Beziehung visualisieren.
-        `,
-    interactionRelationship: `
-            Visualisierungen von Beziehungen ermöglichen die Darstellungen zweier Muster in einer Karten und zeigen, ob zwei Dinge in Beziehung stehen.
-            Das statische Legendenwidget in der unteren rechten Ecke beschreibt die Bedeutung der Farben in der Karte.
-        `,
-    summarizedMoves: `
-            Die "Aggregierten Nutzertrajektorien" zeigen zusammengefasste WebGIS Sitzungen, wobei die Farbe die Differenz des Zoom-Level zwischen zwei Punkten darstellt.
-            Ein negativer Wert bedeutet, dass der Nutzer sich von der Kartenoberfläche entfernt hat ("herauszoomen").
-            Ein positiver Wert bedeutet, dass der Nutzer in die Karte herein gezoomt hat.
-        `
+    start: ui[locale].descriptionTexts.start,
+    interactionSlider: ui[locale].descriptionTexts.interactionSlider,
+    interactionRelationship: ui[locale].descriptionTexts.interactionRelationship,
+    aggregatedTracks: ui[locale].descriptionTexts.aggregatedTracks
   }
 };
