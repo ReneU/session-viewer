@@ -43,7 +43,7 @@ export default {
   },
   descriptionTexts: {
     start: `
-            Das 'Session-Viewer' ermöglicht den interaktiven Vergleich zweier Datensätze mit Hilfe verschiedener Analyselayer .
+            Das 'Session-Viewer' ermöglicht den interaktiven Vergleich zweier Datensätze mit Hilfe verschiedener Analyselayer.
             Die Veränderungen an einer Ansicht werden automatisch auf die andere Ansicht synchronisiert (Ausschnitt, aktive Layer).
             Dadurch können Analyseparameter auf beide Datensätze angewendet und verglichen werden.
             Klicken Sie zum Starten auf einen der beiden Layer in der oberen, linken Ecke (Inhaltsbaum).
