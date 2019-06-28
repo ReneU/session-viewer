@@ -66,6 +66,9 @@ export default class HistogramSlider extends declared(Accessor) {
     const field = layer.rendererFields[0];
     const basemap = appConfig.basemap;
     let colorParams = { view, theme, layer, field, basemap };
+    const minValue = sliderParams.minValue = appConfig.slider[field].minValue;
+    const maxValue = sliderParams.maxValue = appConfig.slider[field].maxValue;
+    const numBins = appConfig.slider[field].numBins;
 
     layer
       .when(() => createContinuousRenderer(colorParams))
@@ -74,7 +77,7 @@ export default class HistogramSlider extends declared(Accessor) {
         sliderParams.statistics = response.statistics;
         sliderParams.visualVariable = response.visualVariable;
 
-        return histogram({layer, field});
+        return histogram({layer, field, minValue, maxValue, numBins});
       })
       .then(histogram => {
         sliderParams.histogram = histogram;

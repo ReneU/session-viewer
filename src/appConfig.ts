@@ -154,5 +154,45 @@ export default {
   slider: {
     "high-to-low": ui[locale].slider.highToLow,
     "above-and-below": ui[locale].slider.aboveAndBelow,
+    zoom: {
+      minValue: 11,
+      maxValue: 21,
+      numBins: 11
+    },
+    interactionCount: {
+      minValue: 0,
+      maxValue: 69,
+      numBins: 10
+    },
+    elapsedSessionTime: {
+      minValue: 0,
+      maxValue: 312,
+      numBins: 10
+    },
+    pragmaticQuality: {
+      minValue: 1,
+      maxValue: 7,
+      numBins: 7
+    },
+    hedonicQuality: {
+      minValue: 1,
+      maxValue: 7,
+      numBins: 7
+    },
+    overallExperience: {
+      minValue: 1,
+      maxValue: 7,
+      numBins: 7
+    },
+    zoomDiff: {
+      minValue: -4,
+      maxValue: 6,
+      numBins: 11
+    },
+    interactionCountMoves: {
+      minValue: 1,
+      maxValue: 8,
+      numBins: 8
+    }
   }
 };

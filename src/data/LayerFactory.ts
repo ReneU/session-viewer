@@ -255,7 +255,7 @@ const toSummarizedMoves = (tracks: Track[], clusters: Cluster[]) => {
             attributes: {
                 zoomDiff: end.attributes.zoom - start.attributes.zoom,
                 scaleDiff: end.attributes.scale - start.attributes.scale,
-                interactionCount: count
+                interactionCountMoves: count
             },
             symbol: {
                 type: 'simple-line',

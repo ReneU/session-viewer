@@ -16,7 +16,7 @@ export default class MovesLayer extends declared(GeometryLayer) {
       type: "oid"
     }),
     new Field({
-      name: "interactionCount",
+      name: "interactionCountMoves",
       alias: appConfig.fields.interactionCountMoves,
       type: "double"
     }),
@@ -43,7 +43,7 @@ export default class MovesLayer extends declared(GeometryLayer) {
         title: appConfig.fields.interactionCountMoves,
         type: "toggle",
         value: false,
-        id: "interactionCount"
+        id: "interactionCountMoves"
       }
     ]
   ];
