@@ -1,4 +1,4 @@
-const locale = "en";
+const locale = "de";
 
 const ui = {
   de: {
