@@ -48,8 +48,8 @@ export default class App extends declared(Widget) {
 
     const leftView = (this.viewLeft = this.createView(mapLeft));
     const rightView = (this.viewRight = this.createView(mapRight));
-    const descriptionWidget = (this.descriptionWidget = new Description());
-    rightView.ui.add(descriptionWidget, "top-right");
+    //const descriptionWidget = (this.descriptionWidget = new Description());
+    //rightView.ui.add(descriptionWidget, "top-right");
 
     const layerFactory = new LayerFactory(appIds);
     mapLeft.add(LayerFactory.createTaskGeometriesLayer());
@@ -235,7 +235,7 @@ export default class App extends declared(Widget) {
           });
         }
         this.updateUI(sourceMap, sourceSlider, sourceLegend);
-        this.updateDescriptionState(sourceMap);
+        //this.updateDescriptionState(sourceMap);
       });
 
       // sync rendererFields of interaction layers
@@ -244,7 +244,7 @@ export default class App extends declared(Widget) {
           return targetLayer.id === layer.id;
         }) as GeometryLayer;
         interactionLayer.rendererFields = value;
-        this.updateDescriptionState(sourceMap);
+        //this.updateDescriptionState(sourceMap);
       });
     });
   }

@@ -1,4 +1,4 @@
-const locale = "de";
+const locale = "en";
 
 const ui = {
   de: {
@@ -105,7 +105,7 @@ export default {
   appName: "Session Viewer",
   scenarioA: ui[locale].scenarioA,
   scenarioB: ui[locale].scenarioB,
-  basemap: "dark-gray",
+  basemap: "gray",
   initialExtent: {
     xmin: 836278.4172107871,
     ymin: 6779715.988551413,
