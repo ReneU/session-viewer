@@ -1,4 +1,7 @@
-# ArcGIS API for JavaScript Template Application
+# Session Viewer
+## Visual Analytics Toolkit for Evaluating Map Interaction in WebGIS
+
+This web application lets you consume, process, visualize, and analyze WebGIS session data by providing interactive visual analytics capabilities.
 
 ## Usage
 
