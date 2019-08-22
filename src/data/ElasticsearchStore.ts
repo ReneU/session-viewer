@@ -1,10 +1,9 @@
 import esriRequest from "esri/request";
-
-const URL = "http://localhost:9200/mapapps/_search";
+import config from "../appConfig";
 
 export default class ElasticsearchStore {
     static getAggregatedSessions(appId: string){
-        return esriRequest(URL, {
+        return esriRequest(config.elasticsearch_url, {
             responseType: "json",
             headers: {
                 "content-type": "application/json"
