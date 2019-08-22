@@ -103,6 +103,7 @@ const ui = {
 
 export default {
   appName: "Session Viewer",
+  elasticsearch_url: "http://localhost:9200/mapapps/_search",
   scenarioA: ui[locale].scenarioA,
   scenarioB: ui[locale].scenarioB,
   basemap: "gray",
