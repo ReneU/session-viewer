@@ -2,13 +2,13 @@ import esriRequest from "esri/request";
 import config from "../appConfig";
 
 export default class ElasticsearchStore {
-    static getAggregatedSessions(appId: string){
-        return esriRequest(config.elasticsearch_url, {
-            responseType: "json",
-            headers: {
-                "content-type": "application/json"
-            },
-            body: `{
+  static getAggregatedSessions(appId: string) {
+    return esriRequest(config.elasticsearch_url, {
+      responseType: "json",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: `{
                "query": {
                   "bool": {
                      "minimum_should_match": 1,
@@ -79,8 +79,8 @@ export default class ElasticsearchStore {
                   }
                }
             }`
-          }).then(function(response){
-            return response.data.aggregations;
-          });
-    }
+    }).then(function(response) {
+      return response.data.aggregations;
+    });
+  }
 }
